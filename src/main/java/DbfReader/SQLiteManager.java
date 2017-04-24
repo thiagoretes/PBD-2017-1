@@ -1,5 +1,7 @@
 package DbfReader;
 
+import org.sqlite.SQLiteConfig;
+
 import javax.xml.transform.Result;
 import java.sql.*;
 
@@ -8,24 +10,42 @@ public class SQLiteManager implements Runnable{
 
     private String connectionURL;
     static private Connection conn;
+    static private int threadCount;
     private String query;
+
+
+
     SQLiteManager(String connectionURL)
     {
         this.connectionURL = "jdbc:sqlite:" + connectionURL;
     }
+
     SQLiteManager(String connectionURL, String query)
     {
         this.connectionURL = "jdbc:sqlite:" + connectionURL;
         this.query = query;
     }
 
+    public boolean commit()
+    {
+        try {
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void connect()
     {
         try
         {
+
             Class.forName("org.sqlite.JDBC");
 
             conn = DriverManager.getConnection(this.connectionURL);
+            conn.setAutoCommit(false);
             System.out.println("Connection to database success!");
 
         } catch (SQLException | ClassNotFoundException e) {
@@ -53,6 +73,29 @@ public class SQLiteManager implements Runnable{
         PreparedStatement prep = con.prepareStatement(sql);
     }*/
 
+    public PreparedStatement createPreStatement(String sql)
+    {
+        try {
+            return conn.prepareStatement(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public synchronized void execute(PreparedStatement sql)
+    {
+        try {
+            if(conn != null) {
+                sql.execute();
+            }
+            else System.out.println("Query: " + sql +" não executada!\n");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+
     public synchronized void execute(String sql)
     {
         try {
@@ -72,9 +115,9 @@ public class SQLiteManager implements Runnable{
     {
         try {
             Connection conn = DriverManager.getConnection(this.connectionURL);
-             Statement stmt = conn.createStatement();
-            // create a new table
-            return stmt.executeQuery(sql);
+            Statement stmt = conn.createStatement();//preparar query
+
+            return stmt.executeQuery(sql);//executar query
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -82,9 +125,17 @@ public class SQLiteManager implements Runnable{
         return null;
     }
 
+    public static int getThreadCount()
+    {
+        return threadCount;
+    }
 
     @Override
     public void run() {
+
+        ++this.threadCount;
         this.execute(this.query);
+        --this.threadCount;
+
     }
 }

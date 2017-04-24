@@ -3,7 +3,6 @@ package DbfReader;
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
-//import com.linuxense.javadbf.*;
 import nl.knaw.dans.common.dbflib.*;
 
 
@@ -35,57 +34,16 @@ public class DBFManager
         this.currentRecord = 0;
     }
 
-    /*public void set_startRecord(int start_record)
-    {
 
-        if(start_record > numberOfRecords) return;
-        if(start_record < currentRecord) {
-            //System.out.println("1");
-            this.reader.close();
-            this.prepareDBF(this.path.toString());
-        }
-        while(currentRecord < start_record)
-        {
-            //System.out.println("2");
-            if(this.reader.nextRecord() == null)
-                return;
-            this.currentRecord++;
-        }
-
-
-    }*/
-
-
-    /*public DBFReader getReader()
-    {
-        return this.reader;
-    }*/
     public String[][] seekRecords(int start_record, int amount) {
-        /*int i;
-        String[][] data = new String[amount][this.numberOfFields];
-        if(start_record > numberOfRecords) return null;
-        if(start_record < currentRecord) {
-            //System.out.println("1");
-            this.reader.close();
-            this.prepareDBF(this.path.toString());
-        }
-        while(currentRecord < start_record)
-        {
-            //System.out.println("2");
-            if(this.reader.nextRecord() == null)
-                return null;
-            this.currentRecord++;
-        }
-        i = 0;
-        while(amount-- > 0)
-        {
-            data[i++] = this.reader.nextRecord();
-        }
-        this.reader.close();
-        return data;*/
+
+
 
         if(table_iterator.hasNext())
         {
+            int endRecord = start_record + amount;
+            if (endRecord > this.numberOfRecords)
+                amount -= (endRecord - numberOfRecords);
             String[][] data = new String[amount][this.numberOfFields];
             if(start_record > numberOfRecords) return null;
             if(start_record < currentRecord) {
@@ -94,16 +52,18 @@ public class DBFManager
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                this.prepareDBF(this.path.toString());
+                this.prepareDBF();
             }
             while(currentRecord < start_record)
             {
                 if(table_iterator.hasNext()) {
                     table_iterator.next();
-                    this.currentRecord++;
+                    ++this.currentRecord;
                 }
             }
             int i = 0;
+
+
 
             while(amount > 0 && table_iterator.hasNext())
             {
@@ -112,15 +72,17 @@ public class DBFManager
                 for(final Field field : this.fields)
                 {
                     try {
-                        data[i][j++] = new String(rec.getRawValue(field));
+                        byte[] rawValue = rec.getRawValue(field);
+                        data[i][j++] = (rawValue == null ? "<NULL>" : new String(rawValue));
+
                     } catch (DbfLibException e) {
                         e.printStackTrace();
                     }
                 }
 
-                i++;
-                amount--;
-                this.currentRecord++;
+                ++i;
+                --amount;
+                ++this.currentRecord;
 
             }
             return data;
@@ -136,24 +98,30 @@ public class DBFManager
         if(this.table_iterator.hasNext()) {
             int i = 0;
             String data[] = new String[this.numberOfFields];
+
             Record rec = this.table_iterator.next();
             this.currentRecord++;
-            for (final Field field : fields) {
-                try {
-                    data[i++] = new String(rec.getRawValue(field));
-                } catch (DbfLibException e) {
-                    e.printStackTrace();
-                    return null;
+            if( rec != null) {
+                for (final Field field : fields) {
+                    try {
+                        byte[] rawValue = rec.getRawValue(field);
+                        data[i++] = (rawValue == null ? "<NULL>" : new String(rawValue));
+                        //System.out.println(field.getName() + ": " + data[i - 1]);
+                    } catch (DbfLibException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
+                return data;
             }
-            return data;
+            else return null;
         }
         else return null;
 
     }
 
 
-    public void prepareDBF(String dbfPath)
+    public void prepareDBF()
     {
         this.currentRecord = 0;
         try
@@ -165,6 +133,7 @@ public class DBFManager
             System.out.println(this.numberOfFields);
             this.numberOfRecords = this.table.getRecordCount();
             this.fieldName = new String[this.numberOfFields];
+
 
             int i = 0;
             for(final Field field : fields)
