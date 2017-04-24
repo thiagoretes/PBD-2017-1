@@ -4,14 +4,19 @@ import javax.xml.transform.Result;
 import java.sql.*;
 
 
-public class SQLiteManager {
+public class SQLiteManager implements Runnable{
 
     private String connectionURL;
-    private Connection conn;
-
+    static private Connection conn;
+    private String query;
     SQLiteManager(String connectionURL)
     {
         this.connectionURL = "jdbc:sqlite:" + connectionURL;
+    }
+    SQLiteManager(String connectionURL, String query)
+    {
+        this.connectionURL = "jdbc:sqlite:" + connectionURL;
+        this.query = query;
     }
 
     public void connect()
@@ -27,26 +32,40 @@ public class SQLiteManager {
             System.out.println("ZICA!");
             e.printStackTrace();
         }
-        finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                System.out.println(ex.getMessage());
-            }
+
+    }
+
+    public void disconnect()
+    {
+        try
+        {
+            if(this.conn != null)
+                conn.close();
+            else
+                System.out.println("A conexão já estava fechada!");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
-    public void execute(String sql)
+    /*public void batchInsert(String sql)
     {
-        try (Connection conn = DriverManager.getConnection(this.connectionURL);
-             Statement stmt = conn.createStatement()) {
-            // create a new table
-            stmt.execute(sql);
+        PreparedStatement prep = con.prepareStatement(sql);
+    }*/
+
+    public synchronized void execute(String sql)
+    {
+        try {
+            if(conn != null) {
+                Statement stmt = conn.createStatement();
+                // create a new table
+                stmt.execute(sql);
+            }
+            else System.out.println("Query: " + sql +" não executada!\n");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+
     }
 
     public ResultSet query(String sql)
@@ -64,4 +83,8 @@ public class SQLiteManager {
     }
 
 
+    @Override
+    public void run() {
+        this.execute(this.query);
+    }
 }

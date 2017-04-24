@@ -40,6 +40,8 @@ dependencies {
     //compile("org.xerial:sqlite-jdbc:3.8.11.2")
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.16.1'
+    //compile files('/home/nowayrlz/Downloads/dans-dbf-lib-1.0.0-beta-10.jar')
+    compile fileTree(dir: 'lib', include: '*.jar')
 
     compile("net.kemitix:sqlite-dialect:0.1.0")
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
@@ -47,7 +49,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
-    compile("com.github.albfernandez:javadbf:1.2.0")
+    //compile("com.github.albfernandez:javadbf:1.2.0")
 
     compile("org.springframework.boot:spring-boot-starter-jetty")
     // end::jetty[]
