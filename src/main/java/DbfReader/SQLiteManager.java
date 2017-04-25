@@ -1,17 +1,14 @@
 package DbfReader;
 
-import org.sqlite.SQLiteConfig;
-
-import javax.xml.transform.Result;
 import java.sql.*;
 
 
 public class SQLiteManager implements Runnable{
 
-    private String connectionURL;
     static private Connection conn;
-    static private int threadCount;
+    private String connectionURL;
     private String query;
+    private PreparedStatement preparedStatement;
 
 
 
@@ -24,6 +21,20 @@ public class SQLiteManager implements Runnable{
     {
         this.connectionURL = "jdbc:sqlite:" + connectionURL;
         this.query = query;
+    }
+
+    SQLiteManager(String connectionURL, PreparedStatement preparedStatement) {
+        this.connectionURL = "jdbc:sqlite:" + connectionURL;
+        this.preparedStatement = preparedStatement;
+    }
+
+    public boolean isConnected() {
+        try {
+            return !conn.isClosed();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean commit()
@@ -43,8 +54,11 @@ public class SQLiteManager implements Runnable{
         {
 
             Class.forName("org.sqlite.JDBC");
+//            SQLiteConfig config = new SQLiteConfig();
+            //           config.setSynchronous(SQLiteConfig.SynchronousMode.OFF);
+            //         config.setJournalMode(SQLiteConfig.JournalMode.OFF);
 
-            conn = DriverManager.getConnection(this.connectionURL);
+            conn = DriverManager.getConnection(this.connectionURL);//, config.toProperties());
             conn.setAutoCommit(false);
             System.out.println("Connection to database success!");
 
@@ -55,11 +69,16 @@ public class SQLiteManager implements Runnable{
 
     }
 
+    /*public void batchInsert(String sql)
+    {
+        PreparedStatement prep = con.prepareStatement(sql);
+    }*/
+
     public void disconnect()
     {
         try
         {
-            if(this.conn != null)
+            if (conn != null)
                 conn.close();
             else
                 System.out.println("A conexão já estava fechada!");
@@ -67,11 +86,6 @@ public class SQLiteManager implements Runnable{
             e.printStackTrace();
         }
     }
-
-    /*public void batchInsert(String sql)
-    {
-        PreparedStatement prep = con.prepareStatement(sql);
-    }*/
 
     public PreparedStatement createPreStatement(String sql)
     {
@@ -87,7 +101,7 @@ public class SQLiteManager implements Runnable{
     {
         try {
             if(conn != null) {
-                sql.execute();
+                sql.executeBatch();
             }
             else System.out.println("Query: " + sql +" não executada!\n");
         } catch (SQLException e) {
@@ -125,17 +139,12 @@ public class SQLiteManager implements Runnable{
         return null;
     }
 
-    public static int getThreadCount()
-    {
-        return threadCount;
-    }
-
     @Override
     public void run() {
 
-        ++this.threadCount;
-        this.execute(this.query);
-        --this.threadCount;
+
+        this.execute(this.preparedStatement);
+
 
     }
 }
