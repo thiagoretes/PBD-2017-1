@@ -9,8 +9,12 @@ Para iniciar o servidor no linux:
 <li>Digite <code>./gradlew bootrun</code>
 
 ## URLS:
-* _Mostrar a quantidade de registros no arquivo DBF_: <code>http://localhost:8080/getDBFRecordAmount</code>
-
+* _Mostrar a quantidade de registros no arquivo DBF_: <code>http://localhost:8080/getDBFRecordAmount?<strong>path</strong>=/caminho_do_arquivo/example.sqlite</code>
+    * **path**: Caminho para o arquivo DBF.
+    
+* _Mostrar a quantidade de registros no banco de dados SQLite_: <code>http://localhost:8080/getSQLiteRecordAmount?path=/caminho_do_arquivo/example.sqlite</code>
+    * **path**: Caminho para o banco de dados SQLite.
+    
 * _Mostrar o conteudo de um arquivo SQLite_: <code>http://localhost:8080/showSQLiteDB?sqlitepath=/caminho_do_arquivo/exemplo.sqlite&start=X&amount=Y</code>
 	* **sqlitepath**: Caminho para o arquivo do BD;
 	* **page**: Número da página;

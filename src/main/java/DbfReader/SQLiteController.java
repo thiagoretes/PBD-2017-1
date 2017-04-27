@@ -227,4 +227,22 @@ public class SQLiteController {
 
 
     }
+
+    @RequestMapping(value = "/getSQLiteRecordAmount")
+    @ResponseBody
+    public String getSQLiteRecortAmount(@RequestParam(value = "path") String path) {
+        SQLiteManager connection = new SQLiteManager(path);
+        connection.connect();
+        String query = "SELECT Count(*) FROM dbf_import";
+        ResultSet rs = connection.query(query);
+        String test = "";
+        try {
+            test = rs.getString(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        connection.disconnect();
+        return test;
+    }
+
 }
