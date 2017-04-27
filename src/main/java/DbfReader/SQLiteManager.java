@@ -78,6 +78,7 @@ public class SQLiteManager implements Runnable{
     {
         try
         {
+
             if (conn != null)
                 conn.close();
             else
@@ -128,7 +129,7 @@ public class SQLiteManager implements Runnable{
     public ResultSet query(String sql)
     {
         try {
-            Connection conn = DriverManager.getConnection(this.connectionURL);
+            //Connection conn = DriverManager.getConnection(this.connectionURL);
             Statement stmt = conn.createStatement();//preparar query
 
             return stmt.executeQuery(sql);//executar query

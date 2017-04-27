@@ -90,6 +90,11 @@ public class DBFController {
                 sql = sql.substring(0, sql.length() - 2);
                 sql += ");";
                 connection.execute(sql);
+                /*for(int i = 0; i < fieldName.length; i++)
+                {
+                    sql = "CREATE INDEX " + fieldName[i] + "_index ON dbf_import (" + fieldName[i] + ");";
+                    connection.execute(sql);
+                }*/
                 String[] rec;
                 int commit_count = 0;
                 sql = "INSERT INTO dbf_import VALUES (";
