@@ -14,3 +14,7 @@ Para iniciar o servidor no linux:
 <li>Conteudo do arquivo DBF em formato JSON: <code>http://localhost:8080/openDBF?path=/caminho_do_arquivo/exemplo.dbf</code>
 <li>Converter um arquivo DBF para SQLite: <code>http://localhost:8080/dbfToSqlite?dbfpath=/caminho_do_arquivo_dbf/exemplo.dbf&sqlitepath=/caminho_do_arquivo_sqlite/exemplo.sqlite</code> 
 
+
+## DBFreader:
+<li><code>npm install && npm run</code>
+<li><code>npm start</code>
