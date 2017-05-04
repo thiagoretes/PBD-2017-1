@@ -130,6 +130,7 @@ public class DBFManager
             this.table.open(IfNonExistent.ERROR);
             this.fields = table.getFields();
             this.numberOfFields = table.getFields().size();
+            
             System.out.println(this.numberOfFields);
             this.numberOfRecords = this.table.getRecordCount();
             this.fieldName = new String[this.numberOfFields];

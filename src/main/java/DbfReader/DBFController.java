@@ -16,7 +16,27 @@ import java.sql.SQLException;
 @RestController
 public class DBFController {
 
-
+    @RequestMapping(value = "/api", produces = "application/json")
+    @ResponseBody
+    public String api(@RequestParam(value = "type", defaultValue = "1") int req_type,
+                      @RequestParam(value = "path") String path,
+                      @RequestParam(value = "path2", defaultValue = "") String path2,
+                      @RequestParam(value = "per_page", defaultValue = "50") int amount,
+                      @RequestParam(value = "page", defaultValue = "1") int page,
+                      @RequestParam(value = "order", defaultValue = "1") int order,
+                      @RequestParam(value = "col", defaultValue = "") String col_name
+                      )
+    {
+        switch (req_type)
+        {
+            case 1:
+                return openDbf(path, page, amount);
+            case 2:
+                return (new SQLiteController().jsonSortedCol(path, amount*(page-1), amount, col_name, order));
+            default:
+                return "Error";
+        }
+    }
     @RequestMapping(value = "/getDBFRecordAmount")
     @ResponseBody
     public String getDBFRecordAmount(@RequestParam(value = "path") String dbfPath) {
@@ -36,32 +56,38 @@ public class DBFController {
         dbf.prepareDBF();//Carregar o DBF
         String fieldsName[] = dbf.getFieldName();//Armazenar nome dos campos
         //String teste [] = dbf.readNext();
-        String[][] row = dbf.seekRecords(page * amountPerPage, amountPerPage);
-        String returnText = "[ { \"fields\": [\n";
+        String[][] row = dbf.seekRecords((page-1) * amountPerPage, amountPerPage);
+        int total = dbf.getNumberOfRecords();
+        String returnText = "{\"total\": \"" + total + "\",\n";
+        returnText += "\"per_page\": \"" + amountPerPage + "\",\n" + "\"current_page\": \"" + page + "\",\n" +
+                "\"last_page\": \"" + total/amountPerPage + "\",\n\"next_page_url\": \"" + "http:\\/\\/localhost:8080\\/api?type=1&page=" +
+                page+1 + "&path=" + dbfPath + "&per_page=" + amountPerPage + "\"\n,\"from\": " + (amountPerPage*(page-1)+1) + ",\n\"to\": " + (amountPerPage*(page))+ ",\n";
+
+        returnText += "\"fields\": [\n";
         for (int i = 0; i < fieldsName.length; i++)
             returnText += "\"" + fieldsName[i] + "\",\n";
 
         returnText = returnText.substring(0, returnText.length() - 2);
-        returnText += "], \"rows\": [ \n";
+        returnText += "], \"data\": [ \n";
 
         amountPerPage = row.length;
 
         for (int i = 0; i < amountPerPage; i++) {
 
 
-            returnText += "[";
+            returnText += "{\"id\": \"" + ((amountPerPage*(page-1))+i+1) + "\", ";
             for (int j = 0; j < fieldsName.length; j++) {
                 if (row[i][j] != null)
-                    returnText += "\"" + row[i][j] + "\",\n";
+                    returnText += "\"" + fieldsName[j] + "\": " + "\"" + row[i][j] + "\",\n";
                 else returnText += "\"" + "null\",\n";
 
             }
 
             returnText = returnText.substring(0, returnText.length() - 2);
-            returnText += "],\n";
+            returnText += "},\n";
         }
         returnText = returnText.substring(0, returnText.length() - 2);
-        returnText += "]}]";
+        returnText += "]}";
 
         return returnText;
 
