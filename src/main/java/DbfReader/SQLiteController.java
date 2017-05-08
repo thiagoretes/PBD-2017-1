@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -80,37 +81,87 @@ public class SQLiteController {
                                 @RequestParam(value = "start", defaultValue = "0") int startRecord,
                                 @RequestParam(value = "amount", defaultValue = "50") int amount,
                                 @RequestParam(value = "name", defaultValue = "") String table,
-                                @RequestParam(value = "sortBy", defaultValue = "0") int order) {
+                                @RequestParam(value = "sortBy", defaultValue = "0") int order,
+                                HttpServletRequest request) {
+
+
+        String currentPath = request.getRequestURL().toString() + "?" + request.getQueryString();
+        currentPath = currentPath.replace("/", "\\/").replace("\\","\\/").replace("\\\\","\\").replace("//","/");
+
+
         SQLiteManager connection = new SQLiteManager(path);
         connection.connect();
         if (connection.isConnected()) {
+
+            String query = "SELECT Count(*) FROM dbf_import";
+            ResultSet rs = connection.query(query);
+            String test = "";
+            try {
+                test = rs.getString(1);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                connection.disconnect();
+                return "Error!";
+            }
+
+
             long startTime = System.currentTimeMillis();
             String sql = "CREATE INDEX IF NOT EXISTS " + table + "_index ON dbf_import (" + table + ");";
-            connection.execute(sql);
-            if (connection.commit())
-                System.out.println("Indice criado com sucesso! Tempo gasto:" + (System.currentTimeMillis() - startTime) / 1000);
             String order_str = (order == 1) ? "ASC" : "DESC";
-            sql = "SELECT * FROM dbf_import ORDER BY " + table + " " + order_str + " LIMIT " + amount + " OFFSET " + startRecord + ";";
-            ResultSet rs = connection.query(sql);
+            System.out.println(order_str + " " + order);
+            //if(!table.equals("rowid")) {
 
-            if (rs == null) System.out.println("deu ruim");
+                System.out.println(table);
+                connection.execute(sql);
+                if (connection.commit())
+                    System.out.println("Indice criado com sucesso! Tempo gasto:" + (System.currentTimeMillis() - startTime) / 1000);
+                sql = "SELECT * FROM dbf_import ORDER BY " + table + " " + order_str + " LIMIT " + amount + " OFFSET " + startRecord + ";";
 
-            String result = "{ \"fields\": [\n";
+            //}
+            //else
+            //{
+                //sql = "SELECT * FROM dbf_import WHERE rowid > " + startRecord + " ORDER BY " + table + " " + order_str + " LIMIT " + amount + ";";
+            //}
+
+            //sql = "SELECT * FROM dbf_import ORDER BY " + table + " " + order_str + " LIMIT " + amount + " OFFSET " + startRecord + ";";
+            rs = connection.query(sql);
+
+            if (rs == null){
+                System.out.println("A query não retornou nada, provavelmente o indice era invalido!");
+                sql = "SELECT * FROM dbf_import ORDER BY rowid " + order_str + " LIMIT " + amount + " OFFSET " + startRecord + ";";
+                rs = connection.query(sql);
+            }
+
+            int total = Integer.parseInt(test);
+            int page = (startRecord/amount) + 1;
+            int to_record = (amount*(page));
+            if(to_record>total) to_record = total;
+            String returnText = "{\"total\": \"" + total + "\", ";
+            returnText += "\"per_page\": \"" + amount + "\", " + "\"current_page\": \"" + page + "\", " +
+                    "\"last_page\": \"" + ((total/amount)+1) + "\", \"next_page_url\": \"" + "http:\\/\\/localhost:8080\\/api?type=2&page=" +
+                    (page+1) + "&path=" + path.replace("\\","\\/") + "&per_page=" + amount + "\", \"from\": " + (amount*(page-1)+1) + ", \"to\": " + to_record + ", ";
+
+            String result = returnText + "\"fields\": [";
 
             try {
                 ResultSetMetaData rsmd = rs.getMetaData();
                 int colCount = rsmd.getColumnCount();
 
-                for (int i = 1; i <= colCount; i++)
-                    result += "\"" + rsmd.getColumnName(i) + "\",\n";
+                for (int i = 1; i <= colCount; i++) {
+                    result += "{ \"name\": \"" + rsmd.getColumnName(i) + "\", ";
+                    result += "\"sortField\": \"" + rsmd.getColumnName(i) + "\", ";
+                    result += "\"visible\": \"true\"}, ";
+
+
+                }
                 result = result.substring(0, result.length() - 2);
-                result += "],\n\"rows\": [\n";
+                result += "], \"data\": [ ";
                 while (rs.next()) {
-                    result += "[";
+                    result += "{";
                     for (int i = 1; i <= colCount; i++)
-                        result += "\"" + rs.getString(i) + "\",\n";
+                        result += "\"" + rsmd.getColumnName(i) + "\": \"" + rs.getString(i) + "\", ";
                     result = result.substring(0, result.length() - 2);
-                    result += "\n],\n";
+                    result += "}, ";
                 }
                 result = result.substring(0, result.length() - 2);
                 result += "]}";

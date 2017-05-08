@@ -5,8 +5,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Thiago Retes on 24/04/17.
@@ -17,22 +20,34 @@ import java.sql.SQLException;
 public class DBFController {
 
     @RequestMapping(value = "/api", produces = "application/json")
-    @ResponseBody
-    public String api(@RequestParam(value = "type", defaultValue = "1") int req_type,
-                      @RequestParam(value = "path") String path,
+
+    public String api(@RequestParam(value = "type", defaultValue = "1") int req_type, //Tipo de requisição 1-LoadDBF, 2-LoadSQLite
+                      @RequestParam(value = "path") String path, //Caminho do arquivo principal
                       @RequestParam(value = "path2", defaultValue = "") String path2,
-                      @RequestParam(value = "per_page", defaultValue = "50") int amount,
-                      @RequestParam(value = "page", defaultValue = "1") int page,
-                      @RequestParam(value = "order", defaultValue = "1") int order,
-                      @RequestParam(value = "col", defaultValue = "") String col_name
+                      @RequestParam(value = "per_page", defaultValue = "50") int amount, //Quantidade de registros por página
+                      @RequestParam(value = "page", defaultValue = "1") int page, //Página desejada
+                      @RequestParam(value = "order", defaultValue = "1") int order, //Ordem das colunas, 1 = ASC : 2 = DESC
+                      @RequestParam(value = "col", defaultValue = "rowid") String col_name, //Nome da Coluna para ordenar
+                      @RequestParam(value = "sort", defaultValue = "") String sortStr,
+                      HttpServletRequest request
                       )
     {
+        if(sortStr!="") {
+            System.out.println(sortStr);
+            String temp[] = sortStr.split("\\|");
+            col_name = temp[0];
+            order = (temp[1].equals("asc")) ? 1 : 0;
+
+        }
+
+
+
         switch (req_type)
         {
             case 1:
                 return openDbf(path, page, amount);
             case 2:
-                return (new SQLiteController().jsonSortedCol(path, amount*(page-1), amount, col_name, order));
+                return (new SQLiteController().jsonSortedCol(path, amount*(page-1), amount, col_name, order, request));
             default:
                 return "Error";
         }
@@ -47,7 +62,7 @@ public class DBFController {
     }
 
     @RequestMapping(value = "/openDBF", produces = "application/json")
-    @ResponseBody
+    //@ResponseBody
     public String openDbf(@RequestParam(value = "path", defaultValue = "/teste/") String dbfPath,
                           @RequestParam(value = "page", defaultValue = "0") int page,
                           @RequestParam(value = "amountPerPage", defaultValue = "200") int amountPerPage) {
@@ -58,17 +73,24 @@ public class DBFController {
         //String teste [] = dbf.readNext();
         String[][] row = dbf.seekRecords((page-1) * amountPerPage, amountPerPage);
         int total = dbf.getNumberOfRecords();
-        String returnText = "{\"total\": \"" + total + "\",\n";
-        returnText += "\"per_page\": \"" + amountPerPage + "\",\n" + "\"current_page\": \"" + page + "\",\n" +
-                "\"last_page\": \"" + total/amountPerPage + "\",\n\"next_page_url\": \"" + "http:\\/\\/localhost:8080\\/api?type=1&page=" +
-                page+1 + "&path=" + dbfPath + "&per_page=" + amountPerPage + "\"\n,\"from\": " + (amountPerPage*(page-1)+1) + ",\n\"to\": " + (amountPerPage*(page))+ ",\n";
+        int to_record = (amountPerPage*(page));
+        if(to_record>total) to_record = total;
+        String returnText = "{\"total\": \"" + total + "\", ";
+        returnText += "\"per_page\": \"" + amountPerPage + "\", " + "\"current_page\": \"" + page + "\", " +
+                "\"last_page\": \"" + ((total/amountPerPage)+1) + "\", \"next_page_url\": \"" + "http:\\/\\/localhost:8080\\/api?type=1&page=" +
+                page+1 + "&path=" + dbfPath.replace("\\","\\/") + "&per_page=" + amountPerPage + "\", \"from\": " + (amountPerPage*(page-1)+1) + ", \"to\": " + to_record + ", ";
 
-        returnText += "\"fields\": [\n";
-        for (int i = 0; i < fieldsName.length; i++)
-            returnText += "\"" + fieldsName[i] + "\",\n";
+        returnText += "\"fields\": [";
+        for (int i = 0; i < fieldsName.length; i++) {
+
+            returnText += "{\"name\": " + "\"" + fieldsName[i] + "\", ";
+            returnText += "\"sortField\": " + "\"" + fieldsName[i] + "\", ";
+            returnText += "\"visible\": " + "\"true\"}, ";
+        }
+
 
         returnText = returnText.substring(0, returnText.length() - 2);
-        returnText += "], \"data\": [ \n";
+        returnText += "], \"data\": [  ";
 
         amountPerPage = row.length;
 
@@ -78,13 +100,13 @@ public class DBFController {
             returnText += "{\"id\": \"" + ((amountPerPage*(page-1))+i+1) + "\", ";
             for (int j = 0; j < fieldsName.length; j++) {
                 if (row[i][j] != null)
-                    returnText += "\"" + fieldsName[j] + "\": " + "\"" + row[i][j] + "\",\n";
-                else returnText += "\"" + "null\",\n";
+                    returnText += "\"" + fieldsName[j] + "\": " + "\"" + row[i][j] + "\", ";
+                else returnText += "\"" + "null\", ";
 
             }
 
             returnText = returnText.substring(0, returnText.length() - 2);
-            returnText += "},\n";
+            returnText += "}, ";
         }
         returnText = returnText.substring(0, returnText.length() - 2);
         returnText += "]}";
@@ -107,7 +129,8 @@ public class DBFController {
                 String fieldName[] = dbf.getFieldName();
                 String drop_sql = "DROP TABLE IF EXISTS dbf_import;";
                 connection.execute(drop_sql);
-                String sql = "CREATE TABLE IF NOT EXISTS dbf_import (\n";
+                String sql = "CREATE TABLE IF NOT EXISTS dbf_import (\n" +
+                        "rowid INTEGER PRIMARY KEY,";
 
                 for (int i = 0; i < fieldName.length; i++) {
                     sql += " " + fieldName[i] + " text,\n";
@@ -123,7 +146,7 @@ public class DBFController {
                 }*/
                 String[] rec;
                 int commit_count = 0;
-                sql = "INSERT INTO dbf_import VALUES (";
+                sql = "INSERT INTO dbf_import VALUES (?,";
 
                 for (int k = 0; k < fieldName.length; k++) {
                     sql += "?,";
@@ -134,12 +157,15 @@ public class DBFController {
                 sql += ")";
                 //ExecutorService threadExecutor = Executors.newFixedThreadPool(10);
                 PreparedStatement statement = connection.createPreStatement(sql);
+                //Inicio novo codigo
 
+                //Fim novo codigo
                 while ((rec = dbf.readNext()) != null) {
                     ++count;
                     ++commit_count;
+                    //statement.setString(1, "?");
                     for (int k = 0; k < fieldName.length; k++) {
-                        statement.setString(k + 1, (rec[k] == null ? "<NULL>" : rec[k]));
+                        statement.setString(k + 2, (rec[k] == null ? "<NULL>" : rec[k]));
                     }
 
                     statement.addBatch();

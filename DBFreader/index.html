@@ -12,9 +12,13 @@
 
   <title>DBFReader</title>
   <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="js/jquery-3.2.0.min.js">
+  <script>
+	  window.jQuery = window.$ = require('jquery');
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
-  <link rel="stylesheet" href="js/jquery-3.2.0.min.js">
+
 
   <style>
     /* Move down content because we have a fixed navbar that is 50px tall */
@@ -184,23 +188,23 @@
       </div>
       <div class="col-md-5">
         <div class="form-inline form-group pull-right">
-          <button class="btn btn-default" data-toggle="modal" data-target="#settingsModal">
+          <button class="btn btn-default"  id="settingsBtn">
                           <span class="glyphicon glyphicon-cog"></span> Configurações
                       </button>
         </div>
         <div class="form-inline form-group pull-right">
           <button id="select-file" class="btn btn-default" data-toggle="modal" >
-                          <span class="glyphicon glyphicon-level-up"></span> Selecionar DBF
+                          <span class="glyphicon glyphicon-level-up"></span> Abrir DBF
             </button>
         </div>
         <div class="form-inline form-group pull-right">
-          <button id="algum-id-abrirDBF" class="btn btn-default" data-toggle="modal" >
-                          <span class="glyphicon glyphicon-copy"></span> Abrir DBF
+          <button id="select-sqlite" class="btn btn-default" data-toggle="modal" >
+                          <span class="glyphicon glyphicon-copy"></span> Abrir SQLite
             </button>
         </div>
       </div>
     </div>
-    <div class="modal fade" id="settingsModal" role="dialog">
+    <div class="modal fade" id="settingsModal">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -256,12 +260,12 @@
       </div>
     </div>
     <div class="table-responsive">
-      <vuetable v-ref:vuetable api-url="http://vuetable.ratiw.net/api/users" pagination-path="" :fields="fields" :sort-order="sortOrder"
+      <vuetable v-ref:vuetable api-url="http://localhost:8080/api" pagination-path="" :fields="fields" :sort-order="sortOrder"
         :multi-sort="multiSort" table-class="table table-bordered table-striped table-hover" ascending-icon="glyphicon glyphicon-chevron-up"
         descending-icon="glyphicon glyphicon-chevron-down" pagination-class="" pagination-info-class="" pagination-component-class=""
         :pagination-component="paginationComponent" :item-actions="itemActions" :append-params="moreParams" :per-page="perPage"
         wrapper-class="vuetable-wrapper" table-wrapper=".vuetable-wrapper" loading-class="loading" detail-row-component="my-detail-row"
-        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB"></vuetable>
+        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB" load-on-start="false"></vuetable>
     </div>
     <hr>
 
@@ -284,7 +288,12 @@
   <script src="js/vue-resource.min.js"></script>
   <script src="js/vue-table.js"></script>
   <script src="js/controller.js"></script>
-
+  <script>$('#settingsModal').modal({
+	  detachable: false,
+	  onVisible: function() {
+		  $('.ui.checkbox').checkbox()
+	  }
+  }).modal('attach events', '#settingsBtn', 'show')</script>
 
 </body>
 

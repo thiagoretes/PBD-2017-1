@@ -1,6 +1,7 @@
 package DbfReader;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import nl.knaw.dans.common.dbflib.*;
@@ -9,6 +10,7 @@ import nl.knaw.dans.common.dbflib.*;
 public class DBFManager
 {
     private Iterator<Record> table_iterator;
+    private List<Record> lista;
     private List<Field> fields;
     private final Table table;
     private int numberOfFields;
@@ -36,9 +38,40 @@ public class DBFManager
 
 
     public String[][] seekRecords(int start_record, int amount) {
+        List<Record> lista = new ArrayList<Record>();
+
+        try {
+            lista = table.getRecordsAt(start_record,amount);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (CorruptedTableException e) {
+            e.printStackTrace();
+        }
+
+        if(lista.isEmpty()) return null;
+        else
+        {
+            String[][] data = new String[amount][this.numberOfFields];
+            int i = 0;
+            for(Record rec : lista)
+            {
+                int j = 0;
+                try {
+                    for(final Field field : this.fields) {
+                        byte[] rawValue = rec.getRawValue(field);
+                        data[i][j++] = (rawValue == null ? "<NULL>" : new String(rawValue));
+                    }
+
+                } catch (DbfLibException e) {
+                    e.printStackTrace();
+                }
+                i++;
+            }
+            return data;
+        }
 
 
-
+        /*OLD CODE
         if(table_iterator.hasNext())
         {
             int endRecord = start_record + amount;
@@ -56,9 +89,11 @@ public class DBFManager
             }
             while(currentRecord < start_record)
             {
+
                 if(table_iterator.hasNext()) {
                     table_iterator.next();
                     ++this.currentRecord;
+
                 }
             }
             int i = 0;
@@ -82,20 +117,68 @@ public class DBFManager
 
                 ++i;
                 --amount;
-                ++this.currentRecord;
+
+                System.out.println(++this.currentRecord);
 
             }
             return data;
 
 
         }
-        return null;
+        return null;*/
+
+    }
+
+    private List<Record> bufferMore()
+    {
+        List<Record> lista = new ArrayList<Record>();
+
+        try {
+            lista = table.getRecordsAt(this.currentRecord, 10000);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (CorruptedTableException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+
 
     }
 
     public synchronized String[] readNext()
     {
-        if(this.table_iterator.hasNext()) {
+        //Inicio novo cod
+        if(this.currentRecord < this.getNumberOfRecords())
+        {
+            if(this.currentRecord%10000==0) this.lista = this.bufferMore();
+            String data[] = new String[this.numberOfFields];
+            Record rec = lista.get(this.currentRecord%10000);
+            this.currentRecord++;
+            if(rec != null)
+            {
+                int i = 0;
+                for (final Field field : fields) {
+                    try {
+                        byte[] rawValue = rec.getRawValue(field);
+                        data[i++] = (rawValue == null ? "<NULL>" : new String(rawValue));
+                        //System.out.println(field.getName() + ": " + data[i - 1]);
+                    } catch (DbfLibException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+                return data;
+            }
+            else return null;
+        }
+        else return null;
+
+
+
+        //Fim novo cod
+
+        /*if(this.table_iterator.hasNext()) {
             int i = 0;
             String data[] = new String[this.numberOfFields];
 
@@ -116,7 +199,7 @@ public class DBFManager
             }
             else return null;
         }
-        else return null;
+        else return null;*/
 
     }
 

@@ -635,9 +635,19 @@ exports.default = {
             this.showLoadingAnimation(wrapper);
 
             var url = this.apiUrl + '?' + this.getAllQueryParams();
+            console.log(url);
             this.$http.get(url, this.httpData, this.httpOptions).then(function (response) {
-                self.tableData = self.getObjectValue(response.data, self.dataPath, null);
+
+				app.fieldInfo = self.getObjectValue(response.data, 'fields', null);
+				console.log(app.fieldInfo);
+                this.normalizeFields();
+				app.__vue__._data.fields = app.fieldInfo;
+
+				self.tableData = self.getObjectValue(response.data, self.dataPath, null);
+				console.log(self.tableData);
                 self.tablePagination = self.getObjectValue(response.data, self.paginationPath, null);
+
+
                 if (self.tablePagination === null) {
                     console.warn('vuetable: pagination-path "' + self.paginationPath + '" not found. ' + 'It looks like the data returned from the sever does not have pagination information ' + 'or you may have set it incorrectly.');
                 }

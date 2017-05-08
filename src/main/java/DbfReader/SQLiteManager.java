@@ -1,5 +1,7 @@
 package DbfReader;
 
+import org.sqlite.SQLiteConfig;
+
 import java.sql.*;
 
 
@@ -20,6 +22,7 @@ public class SQLiteManager implements Runnable{
     SQLiteManager(String connectionURL, String query)
     {
         this.connectionURL = "jdbc:sqlite:" + connectionURL;
+
         this.query = query;
     }
 
@@ -36,6 +39,7 @@ public class SQLiteManager implements Runnable{
             return false;
         }
     }
+
 
     public boolean commit()
     {
@@ -54,12 +58,36 @@ public class SQLiteManager implements Runnable{
         {
 
             Class.forName("org.sqlite.JDBC");
-//            SQLiteConfig config = new SQLiteConfig();
-            //           config.setSynchronous(SQLiteConfig.SynchronousMode.OFF);
-            //         config.setJournalMode(SQLiteConfig.JournalMode.OFF);
+            SQLiteConfig config = new SQLiteConfig();
+                       config.setSynchronous(SQLiteConfig.SynchronousMode.OFF);
+                     config.setJournalMode(SQLiteConfig.JournalMode.OFF);
+                     //config.setPageSize(32768);
+                     //config.setCacheSize(10000);
+            
 
-            conn = DriverManager.getConnection(this.connectionURL);//, config.toProperties());
+
+            conn = DriverManager.getConnection(this.connectionURL, config.toProperties());
             conn.setAutoCommit(false);
+
+
+            Statement stat = conn.createStatement();
+
+            ResultSet rs = stat.executeQuery("pragma journal_mode");
+            System.out.println("journal mode = " + rs.getString(1));
+            rs.close();
+
+            rs = stat.executeQuery("pragma synchronous");
+            System.out.println("Synchronous = " + rs.getBoolean(1));
+            rs.close();
+
+            rs = stat.executeQuery("pragma page_size");
+            System.out.println("Page size = " + rs.getInt(1));
+            rs.close();
+
+            rs = stat.executeQuery("pragma cache_size");
+            System.out.println("cache size = " + rs.getInt(1));
+            rs.close();
+            stat.close();
             System.out.println("Connection to database success!");
 
         } catch (SQLException | ClassNotFoundException e) {
