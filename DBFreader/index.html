@@ -13,9 +13,9 @@
   <title>DBFReader</title>
   <!-- Bootstrap core CSS -->
   <link rel="stylesheet" href="js/jquery-3.2.0.min.js">
-  <script>
+  <!--<script>
 	  window.jQuery = window.$ = require('jquery');
-  </script>
+  </script>-->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
 
@@ -202,9 +202,14 @@
                           <span class="glyphicon glyphicon-copy"></span> Abrir SQLite
             </button>
         </div>
+        <div class="form-inline form-group pull-right">
+          <button id="convert-sqlite" class="btn btn-default" data-toggle="modal" >
+            <span class="glyphicon glyphicon-copy"></span> Converter DBF para SQLite
+          </button>
+        </div>
       </div>
     </div>
-    <div class="modal fade" id="settingsModal">
+    <div class="modal fade" id="settingsModal" >
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -280,7 +285,11 @@
   <!-- Bootstrap core JavaScript
     ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
+
   <script src="js/jquery.min.js"></script>
+  <script>
+      window.jQuery = window.$ = require('jquery');
+  </script>
   <script src="js/bootstrap.min.js"></script>
   <script src="js/moment-with-locales.min.js"></script>
   <script src="js/sweetalert.min.js"></script>
@@ -288,12 +297,13 @@
   <script src="js/vue-resource.min.js"></script>
   <script src="js/vue-table.js"></script>
   <script src="js/controller.js"></script>
-  <script>$('#settingsModal').modal({
+
+  <script>/*$('#settingsModal').modal({
 	  detachable: false,
 	  onVisible: function() {
 		  $('.ui.checkbox').checkbox()
 	  }
-  }).modal('attach events', '#settingsBtn', 'show')</script>
+  }).modal('attach events', '#settingsBtn', 'show')*/</script>
 
 </body>
 

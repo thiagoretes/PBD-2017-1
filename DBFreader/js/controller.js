@@ -2,16 +2,38 @@ var E_SERVER_ERROR = 'Error na communicação com o Servidor'
 const {dialog} = require('electron').remote
 var path = ""
 document.getElementById('select-file').addEventListener('click', function () {
-	dialog.showOpenDialog(function (fileNames) {
-		if (fileNames === undefined) {
-			console.log("No file selected");
-		} else {
-			app.filepath = fileNames[0];
-			console.log(fileNames);
-			app.__vue__.loadDBF();
+    dialog.showOpenDialog(function (fileNames) {
+        if (fileNames === undefined) {
+            console.log("No file selected");
+        } else {
+            app.filepath = fileNames[0];
+            console.log(fileNames);
+            app.__vue__.loadDBF();
 
-		}
-	});
+        }
+    });
+
+}, false);
+
+document.getElementById('convert-sqlite').addEventListener('click', function () {
+    dialog.showOpenDialog(function (fileNames) {
+        if (fileNames === undefined) {
+            console.log("No file selected");
+        } else {
+			var dbfpath = fileNames[0];
+            dialog.showSaveDialog(function (fileNames) {
+                if (fileNames === undefined) {
+                    console.log("No file selected");
+                } else {
+					console.log(fileNames);
+                    app.__vue__.convertDBF(dbfpath,fileNames);
+                }
+            });
+
+
+        }
+    });
+
 }, false);
 
 document.getElementById('select-sqlite').addEventListener('click', function () {
@@ -233,19 +255,79 @@ new Vue({
 			})
 
 		},
-		loadSQLite: function()
-		{
-			this.moreParams = [
-				'path=' + app.filepath,
-				'type=2'
+        loadSQLite: function()
+        {
+            this.moreParams = [
+                'path=' + app.filepath,
+                'type=2'
 
-			]
-			this.$nextTick(function () {
-				this.$broadcast('vuetable:refresh')
-				tableColumns = this.fields;
-			})
+            ]
+            this.$nextTick(function () {
+                this.$broadcast('vuetable:refresh')
+                tableColumns = this.fields;
+            })
 
-		},
+        },
+        convertDBF: function(dbf_path, sqlitepath)
+        {
+        	var self = this;
+
+
+
+                swal({
+                    title: "Converter DBF?",
+                    text: "Converter o arquivo " + dbf_path + " para sqlite? O arquivo será salvo como: " + sqlitepath + "\nA conversão pode levar algum tempo(Cerca de 1min/500MB de arquivo).",
+                    type: "warning",
+                    showCancelButton: true,
+                    closeOnConfirm: true,
+                    confirmButtonText: "Sim",
+                    confirmButtonColor: "#1fb3ec"
+                }, function() {
+                    $.ajax(
+                        {
+                            type: "get",
+                            url: "http://localhost:8080/dbfToSqlite",
+                            data: "dbfpath="+dbf_path+"&sqlitepath="+sqlitepath,
+                            beforeSend: function(){
+                            	console.log(app.filepath);
+                            	console.log(dbf_path);
+                            	console.log(sqlitepath);
+                                self.$broadcast('vuetable:show-loading')
+                            },
+                            complete: function(){
+                                self.$broadcast('vuetable:hide-loading');
+                            },
+                            success: function(data){
+                                swal("Sucesso!", data, "success");
+
+                            },
+                            error: function(data)
+							{
+                                swal("Oops", "Algum erro ocorreu!\n"+data, "error");
+							}
+                        }
+                    )
+                        /*.done(function(data) {
+                            swal("Sucesso!", data, "success");
+
+                        })*/
+                        /*.error(function(data) {
+
+                        });*/
+                });
+
+            /*this.moreParams = [
+                'path=' + dbf_path,
+				'path2=' + app.filepath,
+                'type=2'
+
+            ]
+            /*this.$nextTick(function () {
+                this.$broadcast('vuetable:refresh')
+                tableColumns = this.fields;
+            })*/
+
+        },
 		setFilter: function () {
 			this.moreParams = [
 				'filter=' + this.searchFor
