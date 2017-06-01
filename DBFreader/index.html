@@ -173,9 +173,9 @@
     </div>
   </nav>
 
-  <div id="app" class="container">
-    <!-- Example row of columns -->
-    <h2 class="sub-header">Data View</h2>
+  <div id="app" class="container-fluid">
+    <!-- Example row of columns -->		      <!-- Example row of columns -->
+    <h2 class="sub-header" style="display: none;" v-bind:style="{ display: isLoaded }">{{ tableName }}</h2>
     <hr>
     <div class="row">
       <div class="col-md-7 form-inline">
@@ -275,7 +275,7 @@
         descending-icon="glyphicon glyphicon-chevron-down" pagination-class="" pagination-info-class="" pagination-component-class=""
         :pagination-component="paginationComponent" :item-actions="itemActions" :append-params="moreParams" :per-page="perPage"
         wrapper-class="vuetable-wrapper" table-wrapper=".vuetable-wrapper" loading-class="loading" detail-row-component="my-detail-row"
-        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB" load-on-start="false"></vuetable>
+        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB" :load-on-start="false"></vuetable>
     </div>
     <hr>
 
