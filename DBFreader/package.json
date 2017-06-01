@@ -19,6 +19,7 @@
   "devDependencies": {
     "electron": "~1.6.2",
     "vue": "^1.0.26",
-    "vue-resource": "^1.0.2"
+    "vue-resource": "^1.0.2",
+    "jquery": "^3.2.1"
    }
 }

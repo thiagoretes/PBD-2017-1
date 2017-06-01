@@ -84,6 +84,7 @@ public class DBFController {
         for (int i = 0; i < fieldsName.length; i++) {
 
             returnText += "{\"name\": " + "\"" + fieldsName[i] + "\", ";
+            returnText += "\"title\": " + "\"" + fieldsName[i] + "\", ";
             returnText += "\"sortField\": " + "\"" + fieldsName[i] + "\", ";
             returnText += "\"visible\": " + "\"true\"}, ";
         }

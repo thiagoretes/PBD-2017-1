@@ -149,6 +149,7 @@ public class SQLiteController {
 
                 for (int i = 1; i <= colCount; i++) {
                     result += "{ \"name\": \"" + rsmd.getColumnName(i) + "\", ";
+                    result += "\"title\": " + "\"" + rsmd.getColumnName(i) + "\", ";
                     result += "\"sortField\": \"" + rsmd.getColumnName(i) + "\", ";
                     result += "\"visible\": \"true\"}, ";
 

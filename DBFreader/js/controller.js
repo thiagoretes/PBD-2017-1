@@ -1,12 +1,15 @@
 var E_SERVER_ERROR = 'Error na communicação com o Servidor'
 const {dialog} = require('electron').remote
 var path = ""
+
+
 document.getElementById('select-file').addEventListener('click', function () {
 	dialog.showOpenDialog(function (fileNames) {
 		if (fileNames === undefined) {
 			console.log("No file selected");
 		} else {
 			app.filepath = fileNames[0];
+			app.__vue__.tableName = fileNames[0].split('\\').pop().split('/').pop();
 			console.log(fileNames);
 			app.__vue__.loadDBF();
 
@@ -151,6 +154,8 @@ new Vue({
 			direction: 'asc'
 		}],
 		multiSort: true,
+		isLoaded: 'block',
+		tableName: 'Escolha um arquivo...',
 		perPage: 10,
 		paginationComponent: 'vuetable-pagination',
 		paginationInfoTemplate: 'แสดง {from} ถึง {to} จากทั้งหมด {total} รายการ',

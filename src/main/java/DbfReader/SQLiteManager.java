@@ -63,7 +63,7 @@ public class SQLiteManager implements Runnable{
                      config.setJournalMode(SQLiteConfig.JournalMode.OFF);
                      //config.setPageSize(32768);
                      //config.setCacheSize(10000);
-            
+
 
 
             conn = DriverManager.getConnection(this.connectionURL, config.toProperties());

@@ -173,25 +173,30 @@
     </div>
   </nav>
 
-  <div id="app" class="container">
+  <div id="app" class="container-fluid">
     <!-- Example row of columns -->
-    <h2 class="sub-header">Data View</h2>
+    <h2 class="sub-header" style="display: none;" v-bind:style="{ display: isLoaded }">{{ tableName }}</h2>
     <hr>
     <div class="row">
       <div class="col-md-7 form-inline">
-        <div class="form-inline form-group">
+        <!--<div class="form-inline form-group">
           <label>Pesquise:</label>
           <input v-model="searchFor" class="form-control" @keyup.enter="setFilter">
           <button class="btn btn-primary" @click="setFilter">Pesquisar</button>
           <button class="btn btn-default" @click="resetFilter">Limpar</button>
-        </div>
+        </div>-->
       </div>
       <div class="col-md-5">
         <div class="form-inline form-group pull-right">
+          <button class="btn btn-default" data-toggle="modal" data-target="#settingsModal">
+            <span class="glyphicon glyphicon-cog"></span> Configurações
+          </button>
+        </div>
+        <!--<div class="form-inline form-group pull-right">
           <button class="btn btn-default"  id="settingsBtn">
                           <span class="glyphicon glyphicon-cog"></span> Configurações
                       </button>
-        </div>
+        </div>-->
         <div class="form-inline form-group pull-right">
           <button id="select-file" class="btn btn-default" data-toggle="modal" >
                           <span class="glyphicon glyphicon-level-up"></span> Abrir DBF
@@ -265,7 +270,7 @@
         descending-icon="glyphicon glyphicon-chevron-down" pagination-class="" pagination-info-class="" pagination-component-class=""
         :pagination-component="paginationComponent" :item-actions="itemActions" :append-params="moreParams" :per-page="perPage"
         wrapper-class="vuetable-wrapper" table-wrapper=".vuetable-wrapper" loading-class="loading" detail-row-component="my-detail-row"
-        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB" load-on-start="false"></vuetable>
+        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB" :load-on-start="false"></vuetable>
     </div>
     <hr>
 
@@ -288,12 +293,12 @@
   <script src="js/vue-resource.min.js"></script>
   <script src="js/vue-table.js"></script>
   <script src="js/controller.js"></script>
-  <script>$('#settingsModal').modal({
+<!--  <script>$('#settingsModal').modal({
 	  detachable: false,
 	  onVisible: function() {
 		  $('.ui.checkbox').checkbox()
 	  }
-  }).modal('attach events', '#settingsBtn', 'show')</script>
+  }).modal('attach events', '#settingsBtn', 'show')</script>-->
 
 </body>
 
