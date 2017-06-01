@@ -173,18 +173,18 @@
     </div>
   </nav>
 
-  <div id="app" class="container-fluid">
+  <div id="app" class="container">
     <!-- Example row of columns -->
-    <h2 class="sub-header" style="display: none;" v-bind:style="{ display: isLoaded }">{{ tableName }}</h2>
+    <h2 class="sub-header">Data View</h2>
     <hr>
     <div class="row">
       <div class="col-md-7 form-inline">
-        <!--<div class="form-inline form-group">
+        <div class="form-inline form-group">
           <label>Pesquise:</label>
           <input v-model="searchFor" class="form-control" @keyup.enter="setFilter">
           <button class="btn btn-primary" @click="setFilter">Pesquisar</button>
           <button class="btn btn-default" @click="resetFilter">Limpar</button>
-        </div>-->
+        </div>
       </div>
       <div class="col-md-5">
         <div class="form-inline form-group pull-right">
@@ -207,9 +207,14 @@
                           <span class="glyphicon glyphicon-copy"></span> Abrir SQLite
             </button>
         </div>
+        <div class="form-inline form-group pull-right">
+          <button id="convert-sqlite" class="btn btn-default" data-toggle="modal" >
+            <span class="glyphicon glyphicon-copy"></span> Converter DBF para SQLite
+          </button>
+        </div>
       </div>
     </div>
-    <div class="modal fade" id="settingsModal">
+    <div class="modal fade" id="settingsModal" >
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -270,7 +275,7 @@
         descending-icon="glyphicon glyphicon-chevron-down" pagination-class="" pagination-info-class="" pagination-component-class=""
         :pagination-component="paginationComponent" :item-actions="itemActions" :append-params="moreParams" :per-page="perPage"
         wrapper-class="vuetable-wrapper" table-wrapper=".vuetable-wrapper" loading-class="loading" detail-row-component="my-detail-row"
-        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB" :load-on-start="false"></vuetable>
+        detail-row-id="id" detail-row-transition="expand" row-class-callback="rowClassCB" load-on-start="false"></vuetable>
     </div>
     <hr>
 
@@ -285,7 +290,11 @@
   <!-- Bootstrap core JavaScript
     ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
+
   <script src="js/jquery.min.js"></script>
+  <script>
+      window.jQuery = window.$ = require('jquery');
+  </script>
   <script src="js/bootstrap.min.js"></script>
   <script src="js/moment-with-locales.min.js"></script>
   <script src="js/sweetalert.min.js"></script>

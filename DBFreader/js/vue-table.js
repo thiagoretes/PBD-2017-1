@@ -1013,6 +1013,16 @@ exports.default = {
         }
     },
     events: {
+        'vuetable:show-loading' : function()
+        {
+            var wrapper = document.querySelector(this.tableWrapper);
+            this.showLoadingAnimation(wrapper);
+        },
+        'vuetable:hide-loading' : function()
+        {
+            var wrapper = document.querySelector(this.tableWrapper);
+            this.hideLoadingAnimation(wrapper);
+        },
         'vuetable-pagination:change-page': function vuetablePaginationChangePage(page) {
             if (page == 'prev') {
                 this.gotoPreviousPage();
