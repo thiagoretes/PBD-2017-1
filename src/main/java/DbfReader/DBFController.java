@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,6 +28,7 @@ public class DBFController {
                       @RequestParam(value = "order", defaultValue = "1") int order, //Ordem das colunas, 1 = ASC : 2 = DESC
                       @RequestParam(value = "col", defaultValue = "rowid") String col_name, //Nome da Coluna para ordenar
                       @RequestParam(value = "sort", defaultValue = "") String sortStr,
+                      @RequestParam(value = "filter", defaultValue = "") String filter,
                       HttpServletRequest request
                       )
     {
@@ -45,13 +45,30 @@ public class DBFController {
         switch (req_type)
         {
             case 1:
-                return openDbf(path, page, amount);
+                if(filter.equals(""))
+                    return openDbf(path, page, amount);
+                else
+                    return openFilteredDbf(path, page, amount, filter);
             case 2:
-                return (new SQLiteController().jsonSortedCol(path, amount*(page-1), amount, col_name, order, request));
+                return (new SQLiteController().jsonSortedCol(path, amount*(page-1), amount, col_name, order, filter, request));
             default:
                 return "Error";
         }
     }
+
+
+
+    private String openFilteredDbf(String path, int page, int amount, String filter) {
+        System.out.println(path);
+        DBFManager dbf = new DBFManager(path);//Inicia o Leitor
+        dbf.prepareDBF();//Carregar o DBF
+        String fieldsName[] = dbf.getFieldName();//Armazenar nome dos campos
+        return "";
+
+
+
+    }
+
     @RequestMapping(value = "/getDBFRecordAmount")
     @ResponseBody
     public String getDBFRecordAmount(@RequestParam(value = "path") String dbfPath) {

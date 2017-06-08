@@ -18,6 +18,7 @@
         </element>
         <element id="directory" name="lib">
           <element id="file-copy" path="$PROJECT_DIR$/lib/dans-dbf-lib-1.0.0-beta-10.jar" />
+          <element id="file-copy" path="$PROJECT_DIR$/lib/dans-dbf-lib-1.0.0-beta-10-old.jar" />
           <element id="library" level="project" name="Gradle: org.xerial:sqlite-jdbc:3.16.1" />
           <element id="library" level="project" name="Gradle: net.kemitix:sqlite-dialect:0.1.0" />
           <element id="library" level="project" name="Gradle: org.springframework.boot:spring-boot-starter-thymeleaf:1.5.2.RELEASE" />

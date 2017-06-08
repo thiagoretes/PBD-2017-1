@@ -82,11 +82,13 @@ public class SQLiteController {
                                 @RequestParam(value = "amount", defaultValue = "50") int amount,
                                 @RequestParam(value = "name", defaultValue = "") String table,
                                 @RequestParam(value = "sortBy", defaultValue = "0") int order,
+                                @RequestParam(value = "filter", defaultValue = "") String filter,
                                 HttpServletRequest request) {
 
 
         String currentPath = request.getRequestURL().toString() + "?" + request.getQueryString();
         currentPath = currentPath.replace("/", "\\/").replace("\\","\\/").replace("\\\\","\\").replace("//","/");
+
 
 
         SQLiteManager connection = new SQLiteManager(path);
@@ -116,6 +118,12 @@ public class SQLiteController {
                 if (connection.commit())
                     System.out.println("Indice criado com sucesso! Tempo gasto:" + (System.currentTimeMillis() - startTime) / 1000);
                 sql = "SELECT * FROM dbf_import ORDER BY " + table + " " + order_str + " LIMIT " + amount + " OFFSET " + startRecord + ";";
+            if(!filter.equals(""))
+            {
+                System.out.println("FILTER: " + filter);
+                sql = "SELECT * FROM dbf_import WHERE " + filter + " ORDER BY " + table + " " + order_str + " LIMIT " + amount + " OFFSET " + startRecord + ";";
+                System.out.println("QUERY: " + sql);
+            }
 
             //}
             //else

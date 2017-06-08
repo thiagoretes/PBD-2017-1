@@ -1,33 +1,37 @@
 var E_SERVER_ERROR = 'Error na communicação com o Servidor'
 const {dialog} = require('electron').remote
+const storage = require('electron-storage')
 var path = ""
+
+//Adiciona Listener no botão de abrir dbf para abrir a tela de seleção de arquivo DBF
 document.getElementById('select-file').addEventListener('click', function () {
 	dialog.showOpenDialog(function (fileNames) {
 		if (fileNames === undefined) {
 			console.log("No file selected");
 		} else {
 			app.filepath = fileNames[0];
-			app.__vue__.tableName = fileNames[0].split('\\').pop().split('/').pop();
-			console.log(fileNames);
-			app.__vue__.loadDBF();
+			app.__vue__.tableName = fileNames[0].split('\\').pop().split('/').pop();//Coloca o nome do arquivo na variavel que aparece no topo da pagina
+			console.log(fileNames);//Mostra o nome do arquivo no console
+			app.__vue__.loadDBF();//Chama a função de carregar DBF
 
         }
     });
 
 }, false);
 
+//Adiciona Listener ao botão de conversão DBF-SQLite
 document.getElementById('convert-sqlite').addEventListener('click', function () {
-    dialog.showOpenDialog(function (fileNames) {
+    dialog.showOpenDialog(function (fileNames) {//Abre dialogo para selecionar o arquivo DBF
         if (fileNames === undefined) {
             console.log("No file selected");
         } else {
-			var dbfpath = fileNames[0];
-            dialog.showSaveDialog(function (fileNames) {
+			var dbfpath = fileNames[0];//Coloca o caminho do dbf na variavel
+            dialog.showSaveDialog(function (fileNames) {//Abre dialogo para salvar o arquivo SQLite
                 if (fileNames === undefined) {
                     console.log("No file selected");
                 } else {
 					console.log(fileNames);
-                    app.__vue__.convertDBF(dbfpath,fileNames);
+                    app.__vue__.convertDBF(dbfpath,fileNames);//Chama Função para converter DBF
                 }
             });
 
@@ -54,6 +58,7 @@ document.getElementById('select-sqlite').addEventListener('click', function () {
 
 // fields definition
 var tableColumns = [
+	/*
 	{
 		name: 'id',
 		title: '',
@@ -94,7 +99,7 @@ var tableColumns = [
 	{
 		name: '__actions',
 		dataClass: 'text-center',
-	}
+	}*/
 ]
 
 Vue.config.debug = true
@@ -128,7 +133,7 @@ Vue.component('custom-action', {
 
 Vue.component('my-detail-row', {
 	template: [
-		'<div class="detail-row ui form" @click="onClick($event)">',
+		/*'<div class="detail-row ui form" @click="onClick($event)">',
 		'<div class="inline field">',
 		'<label>Nome: </label>',
 		'<span>{{rowData.name}}</span>',
@@ -149,7 +154,7 @@ Vue.component('my-detail-row', {
 		'<label>Gênero: </label>',
 		'<span>{{rowData.gender}}</span>',
 		'</div>',
-		'</div>',
+		'</div>',*/
 	].join(''),
 	props: {
 		rowData: {
@@ -158,9 +163,9 @@ Vue.component('my-detail-row', {
 		}
 	},
 	methods: {
-		onClick: function (event) {
+		/*onClick: function (event) {
 			console.log('my-detail-row: on-click')
-		}
+		}*/
 	},
 })
 
@@ -247,6 +252,11 @@ new Vue({
 		 */
 		loadDBF: function()
 		{
+			this.moreParamsOld = [
+				'path=' + app.filepath,
+				'type=1'
+
+			]
 			this.moreParams = [
 				'path=' + app.filepath,
 				'type=1'
@@ -260,6 +270,11 @@ new Vue({
 		},
 		loadSQLite: function()
 		{
+			this.moreParamsOld = [
+				'path=' + app.filepath,
+				'type=2'
+
+			]
 			this.moreParams = [
 				'path=' + app.filepath,
 				'type=2'
@@ -269,6 +284,20 @@ new Vue({
 				this.$broadcast('vuetable:refresh')
 				tableColumns = this.fields;
 			})
+			storage.isPathExists(app.filepath+".json")
+				.then(itDoes => {
+					if (itDoes) {
+						console.log('pathDoesExists !')
+						storage.get(filePath)
+							.then(data => {
+
+								console.log(data);
+							})
+							.catch(err => {
+								console.error(err);
+							});
+					}
+				});
 
         },
         convertDBF: function(dbf_path, sqlitepath)
@@ -332,17 +361,29 @@ new Vue({
 
         },
 		setFilter: function () {
-			this.moreParams = [
-				'filter=' + this.searchFor
-			]
+			this.moreParams = [];
+			for(i=0; i < this.moreParamsOld.length; i++)
+				this.moreParams[i] = this.moreParamsOld[i]
+			this.moreParams[++i] = 'filter=' + this.searchFor
+
 			this.$nextTick(function () {
 				this.$broadcast('vuetable:refresh')
+				tableColumns = this.fields;
 			})
 		},
 		resetFilter: function () {
 			this.searchFor = ''
 			this.setFilter()
 		},
+		saveConfig: function()
+		{
+			this.configFile = {
+				fields: this.fields,
+			}
+			storage.set(app.filepath+".json", this.configFile).then(() => { console.log('Config File saved with success!')}).catch(err => {console.log(err)});
+
+		}
+		,
 		preg_quote: function (str) {
 			// http://kevin.vanzonneveld.net
 			// +   original by: booeyOH
@@ -359,10 +400,11 @@ new Vue({
 			return (str + '').replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
 		},
 		highlight: function (needle, haystack) {
-			return haystack.replace(
-				new RegExp('(' + this.preg_quote(needle) + ')', 'ig'),
-				'<span class="highlight">$1</span>'
-			)
+			//FUNÇÃO RETIRADA POR PROBLEMAS
+			//return haystack.replace(
+			//	new RegExp('(' + this.preg_quote(needle) + ')', 'ig'),
+			//	'<span class="highlight">$1</span>'
+			//)
 		},
 		makeDetailRow: function (data) {
 			return [
@@ -434,7 +476,7 @@ new Vue({
 		'vuetable:cell-clicked': function (data, field, event) {
 			console.log('cell-clicked:', field.name)
 			if (field.name !== '__actions') {
-				this.$broadcast('vuetable:toggle-detail', data.id)
+				//this.$broadcast('vuetable:toggle-detail', data.id)
 			}
 		},
 		'vuetable:action': function (action, data) {

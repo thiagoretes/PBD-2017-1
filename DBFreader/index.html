@@ -13,6 +13,7 @@
   <title>DBFReader</title>
   <!-- Bootstrap core CSS -->
   <link rel="stylesheet" href="js/jquery-3.2.0.min.js">
+
   <script>
 	  window.jQuery = window.$ = require('jquery');
   </script>
@@ -133,6 +134,10 @@
       -webkit-animation: pulse 1s 0s ease-in-out infinite;
       animation: pulse 1s 0s ease-in-out infinite;
     }
+    #app { height: 100%;}
+    #colunas { width:20%; height: 100%; border-right: 1px solid gray; float:left; }
+    #content { width:80%; height: 100%; float:left; }
+    html, body {height: 100%; padding-bottom: 0px;}
 
     @keyframes pulse {
       0% {
@@ -172,9 +177,23 @@
 
     </div>
   </nav>
+  <div id="app">
+  <div id="colunas">
+    <div class="panel-body">
+      <h1>Colunas</h1>
+      <div class="checkbox" v-for="field in fields">
+        <label>
+          <input type="checkbox" v-model="field.visible">
+          {{ field.title == '' ? field.name.replace('__', '') : field.title | capitalize }}:{{field.name}}
+        </label>
+      </div>
+    </div></div>
 
-  <div id="app" class="container-fluid">
+
+  <div id="content" class="container-fluid">
+
     <!-- Example row of columns -->		      <!-- Example row of columns -->
+
     <h2 class="sub-header" style="display: none;" v-bind:style="{ display: isLoaded }">{{ tableName }}</h2>
     <hr>
     <div class="row">
@@ -184,6 +203,7 @@
           <input v-model="searchFor" class="form-control" @keyup.enter="setFilter">
           <button class="btn btn-primary" @click="setFilter">Pesquisar</button>
           <button class="btn btn-default" @click="resetFilter">Limpar</button>
+            <button class="btn btn-primary">Salvar Consulta</button>
         </div>
       </div>
       <div class="col-md-5">
@@ -212,6 +232,12 @@
             <span class="glyphicon glyphicon-copy"></span> Converter DBF para SQLite
           </button>
         </div>
+          <div class="form-inline form-group pull-right">
+              <button id="save-config" class="btn btn-default" @click="saveConfig">
+                  <span class="glyphicon glyphicon-copy"></span> Salvar Configurações
+              </button>
+          </div>
+
       </div>
     </div>
     <div class="modal fade" id="settingsModal" >
@@ -221,50 +247,54 @@
             <button type="button" class="close" data-dismiss="modal">
                             <span>&times;</span>
                         </button>
-            <h4 class="modal-title">Settings</h4>
+            <h4 class="modal-title">Configurações</h4>
           </div>
           <div class="modal-body">
-            <div class="form-group">
+            <!--<div class="form-group">
               <div class="checkbox">
                 <label>
                                     <input type="checkbox" v-model="multiSort"> Multisort (use Alt+Click)
                                 </label>
               </div>
-            </div>
-            <div class="form-group">
+            </div>-->
+            <!--<div class="form-group">
               <label>Pagination:</label>
               <select class="form-control" v-model="paginationComponent">
                                 <option value="vuetable-pagination">vuetable-pagination</option>
                                 <option value="vuetable-pagination-dropdown">vuetable-pagination-dropdown</option>
                             </select>
-            </div>
+            </div>-->
             <div class="form-group">
-              <label>Per Page:</label>
+              <label>Registros por página:</label>
               <select class="form-control" v-model="perPage">
                                 <option value=10>10</option>
                                 <option value=15>15</option>
                                 <option value=20>20</option>
                                 <option value=25>25</option>
+                                <option value=50>50</option>
+                                <option value=100>100</option>
                             </select>
             </div>
             <div class="form-group">
               <div class="panel panel-default">
                 <div class="panel-heading">
-                  <h4 class="panel-title">Visible fields</h4>
+                  <h4 class="panel-title">Label das Colunas</h4>
                 </div>
                 <div class="panel-body">
                   <div class="checkbox" v-for="field in fields">
                     <label>
-                                            <input type="checkbox" v-model="field.visible">
-                                            {{ field.title == '' ? field.name.replace('__', '') : field.title | capitalize }}
+                                            <input  v-model="field.title">
+                                            {{ field.name | capitalize }}
                                         </label>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Salvar</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
           </div>
         </div>
       </div>
@@ -284,7 +314,9 @@
     </footer>
 
   </div>
+  </div>
   <!-- /container -->
+
 
 
   <!-- Bootstrap core JavaScript
