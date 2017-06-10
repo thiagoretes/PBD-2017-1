@@ -1,3 +1,5 @@
+
+
 var E_SERVER_ERROR = 'Error na communicação com o Servidor'
 const {dialog} = require('electron').remote
 const storage = require('electron-storage')

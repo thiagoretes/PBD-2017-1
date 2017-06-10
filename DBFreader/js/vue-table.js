@@ -436,7 +436,7 @@ exports.default = {
         paginationInfoTemplate: {
             type: String,
             default: function _default() {
-                return "Displaying {from} to {to} of {total} items";
+                return "Disponibilizando {from} para {to} de {total} Dados";
             }
         },
         paginationInfoNoDataTemplate: {
