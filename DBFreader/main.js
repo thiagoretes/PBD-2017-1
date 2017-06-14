@@ -12,7 +12,7 @@ let mainWindow
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({show: false, width: 800, height: 600})
+  mainWindow = new BrowserWindow({show: false, width: 800, height: 600, icon: __dirname + '/img/appIcon.jpg'})
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize()
     mainWindow.show()

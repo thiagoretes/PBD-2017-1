@@ -42,7 +42,7 @@ document.getElementById('convert-sqlite').addEventListener('click', function () 
     });
 
 }, false);
-
+//Adiciona Listener ao botão de Abrir SQLite
 document.getElementById('select-sqlite').addEventListener('click', function () {
 	dialog.showOpenDialog(function (fileNames) {
 		if (fileNames === undefined) {
@@ -55,8 +55,6 @@ document.getElementById('select-sqlite').addEventListener('click', function () {
 		}
 	});
 }, false);
-
-
 
 // fields definition
 var tableColumns = [
@@ -222,12 +220,13 @@ new Vue({
 		'paginationComponent': function (val, oldVal) {
 			this.$broadcast('vuetable:load-success', this.$refs.vuetable.tablePagination)
 			this.paginationConfig(this.paginationComponent)
+			
 		}
 	},
 	methods: {
 		/**
 		 * Callback functions
-		 */
+		 
 		allCap: function (value) {
 			return value.toUpperCase()
 		},
@@ -268,6 +267,7 @@ new Vue({
 				this.$broadcast('vuetable:refresh')
 				tableColumns = this.fields;
 			})
+			
 
 		},
 		loadSQLite: function()

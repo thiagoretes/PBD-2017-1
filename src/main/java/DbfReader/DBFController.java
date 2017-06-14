@@ -91,11 +91,13 @@ public class DBFController {
         String[][] row = dbf.seekRecords((page-1) * amountPerPage, amountPerPage);
         int total = dbf.getNumberOfRecords();
         int to_record = (amountPerPage*(page));
+	int last_page = total/amountPerPage;
+	last_page += (total%amountPerPage) > 0 ? 1 : 0;
         if(to_record>total) to_record = total;
         String returnText = "{\"total\": \"" + total + "\", ";
         returnText += "\"per_page\": \"" + amountPerPage + "\", " + "\"current_page\": \"" + page + "\", " +
                 "\"last_page\": \"" + ((total/amountPerPage)+1) + "\", \"next_page_url\": \"" + "http:\\/\\/localhost:8080\\/api?type=1&page=" +
-                page+1 + "&path=" + dbfPath.replace("\\","\\/") + "&per_page=" + amountPerPage + "\", \"from\": " + (amountPerPage*(page-1)+1) + ", \"to\": " + to_record + ", ";
+                (page+1) + "&path=" + dbfPath.replace("\\","\\/") + "&per_page=" + amountPerPage + "\", \"from\": " + (amountPerPage*(page-1)+1) + ", \"to\": " + to_record + ", ";
 
         returnText += "\"fields\": [";
         for (int i = 0; i < fieldsName.length; i++) {
@@ -111,7 +113,7 @@ public class DBFController {
         returnText += "], \"data\": [  ";
 
         amountPerPage = row.length;
-
+	if((total-((page-1) * amountPerPage) < amountPerPage)) amountPerPage = (total-((page-1) * amountPerPage));
         for (int i = 0; i < amountPerPage; i++) {
 
 
