@@ -369,6 +369,15 @@ new Vue({
 
 			});
 		},
+		gerarGraficos: function(){
+
+			if(app.__vue__.gridColumns.length == 0 || app.__vue__.gridData == 0){
+				swal("Ops", "Você tem que realizar uma consulta para poder gerar o grafico a partir dela!\n", "error");
+			}
+			else{
+				
+			}
+		},
 		realizarConsulta: function()
 		{
 			let self = this;

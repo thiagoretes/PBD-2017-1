@@ -22,5 +22,8 @@
     "vue-resource": "^1.0.2",
     "jquery": "^3.2.1",
     "bootstrap": "^3.3.7"
-   }
+  },
+  "dependencies": {
+    "chart.js": "^2.6.0"
+  }
 }
