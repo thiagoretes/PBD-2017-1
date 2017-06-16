@@ -2,6 +2,7 @@
 
 var E_SERVER_ERROR = 'Error na communicação com o Servidor'
 const {dialog} = require('electron').remote
+var Chart = require('chart.js');
 var fs = require('fs');
 var path = ""
 

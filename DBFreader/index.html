@@ -283,7 +283,8 @@
             </div>
             
             <div class="form-group">
-              <div class="panel panel-default">
+              <canvas id="myChart" width="400" height="400"></canvas>
+              <!--div class="panel panel-default">
                 <div class="panel-heading">
                   <h4 class="panel-title">Colunas</h4>
                 </div>
@@ -291,12 +292,11 @@
                   <div class="checkbox" v-for="field in fields">
                     <label>
                       <input class='check' type="checkbox">
-
                       {{ field.title == '' ? field.name.replace('__', '') : field.title | capitalize }}:{{field.name}}
                     </label>
                   </div>
                 </div>
-              </div>
+              </div-->
             </div>
           </div>     
     
