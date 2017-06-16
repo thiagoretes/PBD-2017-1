@@ -164,6 +164,10 @@
 
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
+      <a class="navbar-brand" rel="home" href="#">
+                    <img style="max-width:53px; margin-top: -15px;"
+                         src="img/appIcon.jpg">
+          </a>
       <div class="navbar-header">
         <a class="navbar-brand" href="#">DBF Reader - PBD</a>
 
@@ -202,60 +206,61 @@
     <h2 class="sub-header" style="display: none;" v-bind:style="{ display: isLoaded }">{{ tableName }}</h2>
     <hr>
     <div class="row">
-      <div class="col-md-7 form-inline">
+      <div class="col-md-10 form-inline">
         <div class="form-inline form-group">
           <label>Pesquise:</label>
           <input v-model="searchFor" class="form-control" @keyup.enter="setFilter">
           <button class="btn btn-primary" @click="setFilter">Pesquisar</button>
           <button class="btn btn-default" @click="resetFilter">Limpar</button>
-            <button class="btn btn-primary">Salvar Consulta</button>
+            <button class="btn btn-warning">Salvar Consulta</button>
         </div>
       </div>
-      <div class="col-md-5">
+      <div class="col-md-12" style="margin:10px;">
         <div class="form-inline form-group pull-right">
-          <button class="btn btn-default" data-toggle="modal" data-target="#settingsModal">
+          <button class="btn btn-danger" data-toggle="modal" data-target="#settingsModal">
             <span class="glyphicon glyphicon-cog"></span> Configurações
           </button>
         </div>
-        <div class="form-inline form-group pull-right">
-          <button class="btn btn-default" data-toggle="modal" data-target="#graphcsModal">
-            <span class="glyphicon glyphicon-signal"></span> Gerar Gráfico
-          </button>
-        </div>
+        
 
-        <div class="form-inline form-group pull-right">
+        <div class="form-inline form-group pull-left">
           <button id="select-file" class="btn btn-default" data-toggle="modal" >
                           <span class="glyphicon glyphicon-level-up"></span> Abrir DBF
             </button>
         </div>
-        <div class="form-inline form-group pull-right">
+        <div class="form-inline form-group pull-left">
           <button id="select-sqlite" class="btn btn-default" data-toggle="modal" >
-                          <span class="glyphicon glyphicon-copy"></span> Abrir SQLite
+                          <span class="glyphicon glyphicon-open-file"></span> Abrir SQLite
             </button>
         </div>
-        <div class="form-inline form-group pull-right">
+        <div class="form-inline form-group pull-left">
           <button id="convert-sqlite" class="btn btn-default" data-toggle="modal" >
-            <span class="glyphicon glyphicon-copy"></span> Converter DBF para SQLite
+            <span class="glyphicon glyphicon-refresh"></span> Converter DBF para SQLite
           </button>
         </div>
         <div class="form-inline form-group pull-right">
           <button id="save-config" class="btn btn-default" @click="saveConfig">
-            <span class="glyphicon glyphicon-copy"></span> Salvar Configurações
+            <span class="glyphicon glyphicon-open"></span> Salvar Configurações
           </button>
         </div>
         <div class="form-inline form-group pull-right">
           <button id="load-config" class="btn btn-default" @click="loadFile">
-            <span class="glyphicon glyphicon-copy"></span> Carregar Configurações
+            <span class="glyphicon glyphicon-save"></span> Carregar Configurações
           </button>
         </div>
-        <div class="form-inline form-group pull-right">
+        <div class="form-inline form-group pull-left">
+          <button class="btn btn-default" data-toggle="modal" data-target="#graphcsModal">
+            <span class="glyphicon glyphicon-signal"></span> Gerar Gráfico
+          </button>
+        </div>
+        <div class="form-inline form-group pull-left">
           <button id="create-column" class="btn btn-default" data-target="#createColumnModal" data-toggle="modal">
-            <span class="glyphicon glyphicon-copy"></span> Criar Coluna Derivada
+            <span class="glyphicon glyphicon-object-align-top"></span> Criar Coluna Derivada
           </button>
         </div>
-        <div class="form-inline form-group pull-right">
+        <div class="form-inline form-group pull-left">
           <button id="consultaBtn" class="btn btn-default" data-target="#consultaModal" data-toggle="modal">
-            <span class="glyphicon glyphicon-copy"></span> Realizar Consulta
+            <span class="glyphicon glyphicon-search"></span> Realizar Consulta
           </button>
         </div>
 
