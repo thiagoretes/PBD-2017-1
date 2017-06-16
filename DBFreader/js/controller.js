@@ -2,7 +2,7 @@
 
 var E_SERVER_ERROR = 'Error na communicação com o Servidor'
 const {dialog} = require('electron').remote
-
+var fs = require('fs');
 var path = ""
 
 //Adiciona Listener no botão de abrir dbf para abrir a tela de seleção de arquivo DBF
@@ -279,6 +279,7 @@ new Vue({
 		},
 		loadSQLite: function()
 		{
+			var self = this;
 			this.moreParamsOld = [
 				'path=' + app.filepath,
 				'type=2'
@@ -292,10 +293,39 @@ new Vue({
 			this.$nextTick(function () {
 				this.$broadcast('vuetable:refresh')
 				tableColumns = this.fields;
+
+
 			})
 
 
+
+
+
         },
+		loadFile: function()
+		{
+			var self = this;
+			save_file = app.filepath+".json";
+
+			fs.readFile(save_file, 'utf-8', (err, data) => {
+				if(err){
+					alert("An error ocurred reading the file :" + err.message);
+					return;
+				}
+					data = JSON.parse(data);
+					if(data.fields != null) app.__vue__.fields = data["fields"];
+					if(data.gridData != null) self.gridData = data.gridData;
+					if(data.gridColumns != null) self.gridColumns = data.gridColumns;
+					if(data.consulta != null) self.consulta = data.consulta;
+					if(data.moreParams != null) self.moreParams = data.moreParams;
+					if(data.newCol != null) self.newCol = data.newCol;
+					if(data.originalCol != null) self.originalCol = data.originalCol;
+
+
+				// Change how to handle the file content
+				console.log("The file content is : " + data);
+			});
+		},
 		createDerivatedCol: function()
 		{
 			let self = this;
@@ -460,10 +490,37 @@ new Vue({
 		},
 		saveConfig: function()
 		{
-			this.configFile = {
+			var self = this;
+			save_file = app.filepath+".json";
+			content = {
+				fields: self.fields,
+				gridData: self.gridData,
+				gridColumns: self.gridColumns,
+				consulta: self.consulta,
+				moreParams: self.moreParams,
+				newCol: self.newCol,
+				originalCol: self.originalCol,
+
+			}
+			fs.writeFile(save_file, JSON.stringify(content), (err) => {
+				if(err){
+					alert("An error ocurred creating the file "+ err.message)
+				}
+
+				alert("The file has been succesfully saved");
+			});
+			/*$.ajax({
+				type: 'POST',
+				url: '/save_config/',
+				data: JSON.stringify(self), // or JSON.stringify ({name: 'jonas'}),
+				success: function(data) { console.log("Funfou");},
+				contentType: "application/json",
+				dataType: 'json'
+			});*/
+			/*this.configFile = {
 				fields: this.fields,
 			}
-			storage.set(app.filepath+".json", this.configFile).then(() => { console.log('Config File saved with success!')}).catch(err => {console.log(err)});
+			storage.set(app.filepath+".json", this.configFile).then(() => { console.log('Config File saved with success!')}).catch(err => {console.log(err)});*/
 
 		}
 		,

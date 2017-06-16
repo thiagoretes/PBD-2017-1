@@ -135,9 +135,11 @@
       animation: pulse 1s 0s ease-in-out infinite;
     }
     #app { height: 100%;}
-    #colunas { width:20%; height: 100%; border-right: 1px solid gray; float:left; }
-    #content { width:80%; height: 100%; float:left; }
-    html, body {height: 100%; padding-bottom: 0px;}
+    #colunas { width:20%; height: 100%; border-right: 1px solid gray; float:left; overflow: scroll;}
+    #content { width:80%; height: 100%; float:right; }
+    html, body {height: 100%; padding-bottom: 0px; min-height: 100%;}
+    footer {
+      border-left: 1px solid gray;}
 
     @keyframes pulse {
       0% {
@@ -178,7 +180,8 @@
     </div>
   </nav>
   <div id="app">
-  <div id="colunas">
+  <div id="colunas" style="height: 100vh">
+
     <div class="panel-body" style="height: 100%">
       <h1>Colunas</h1>
       <div class="checkbox container-fluid" v-for="field in fields">
@@ -187,7 +190,9 @@
           {{ field.title == '' ? field.name.replace('__', '') : field.title | capitalize }} : {{field.name}}
         </label>
       </div>
-    </div></div>
+    </div>
+      </div>
+    
 
 
   <div id="content" class="container-fluid">
@@ -236,6 +241,11 @@
         <div class="form-inline form-group pull-right">
           <button id="save-config" class="btn btn-default" @click="saveConfig">
             <span class="glyphicon glyphicon-copy"></span> Salvar Configurações
+          </button>
+        </div>
+        <div class="form-inline form-group pull-right">
+          <button id="load-config" class="btn btn-default" @click="loadFile">
+            <span class="glyphicon glyphicon-copy"></span> Carregar Configurações
           </button>
         </div>
         <div class="form-inline form-group pull-right">
