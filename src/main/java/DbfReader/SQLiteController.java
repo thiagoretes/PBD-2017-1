@@ -5,10 +5,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.Table;
+import com.google.common.collect.HashBasedTable;
+
 import javax.servlet.http.HttpServletRequest;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Thiago Retes
@@ -72,6 +79,144 @@ public class SQLiteController {
             }
         } else return "{\"result\": \"Error\"}";
 
+    }
+
+    @RequestMapping(value = "/relacionaCol", produces = "application/json")
+    @ResponseBody
+    public String relacionaColunas(@RequestParam(value = "path") String path,
+                                     @RequestParam(value = "main_col") String main_col,
+                                     @RequestParam(value = "sec_col") String sec_col) {
+        long time_start = System.currentTimeMillis();
+        SQLiteManager connection1 = new SQLiteManager(path);//Instanciar nova conexão
+        connection1.connect();//Conectar ao banco de dados
+        SQLiteManager connection2 = new SQLiteManager(path);//Instanciar nova conexão
+        connection2.connect();//Conectar ao banco de dados
+        SQLiteManager connection3 = new SQLiteManager(path);//Instanciar nova conexão
+        connection3.connect();//Conectar ao banco de dados
+        String sql = "CREATE INDEX IF NOT EXISTS " + main_col + "_index ON dbf_import (" + main_col + ");";
+        connection1.execute(sql);
+        sql = "CREATE INDEX IF NOT EXISTS " + sec_col + "_index ON dbf_import (" + sec_col + ");";
+        connection1.execute(sql);
+        connection1.commit();
+
+
+        if(connection1.isConnected())
+        {
+            String query = "SELECT DISTINCT " + main_col + " FROM dbf_import ORDER BY " + main_col + " ASC;";
+
+            String query2 = "SELECT DISTINCT " + sec_col + " FROM dbf_import ORDER BY " + sec_col + " ASC;";
+
+            ResultSet main = connection1.query(query);
+
+            ResultSet secondary = connection2.query(query2);
+
+            List<String> header_list = new ArrayList<String>();
+            List<String> main_list = new ArrayList<String>();
+            List<String> sec_list = new ArrayList<String>();
+            header_list.add(main_col);
+            Table<String, String, String> table = HashBasedTable.create();
+            String return_result = "{\"gridData\":[";
+            try {
+                //ResultSetMetaData main_rsmd = secondary.getMetaData();
+                int tamanho_main_col = 0;
+                while(main.next())
+                {
+
+                    main_list.add(main.getString(1));
+                    tamanho_main_col++;
+
+                }
+
+
+                ResultSetMetaData sec_rsmd = secondary.getMetaData();
+
+                int i = 1;
+                while(secondary.next())
+                {
+
+                    query2 = "SELECT " + main_col + ", COUNT(rowid) AS \'" + secondary.getString(i) + "\' FROM dbf_import WHERE " + sec_col + "=\'" + secondary.getString(i) + "\' GROUP BY " + main_col + ";";
+                    //System.out.println("Passou query3");
+
+                    header_list.add(secondary.getString(i));
+                    sec_list.add(secondary.getString(i));
+
+                    ResultSet teste = connection3.query(query2);
+                    //System.out.println(i + ": " + teste.getMetaData().getColumnCount());
+                    while(teste.next())
+                    {
+
+                        table.put(teste.getString(1),secondary.getString(1), teste.getString(2));
+
+
+
+                    }
+
+
+
+                }
+                /*for (Table.Cell<String, String, String> cell: table.cellSet()){
+                    System.out.println(cell.getRowKey()+" "+cell.getColumnKey()+" "+cell.getValue());
+                }*/
+
+                for(String s : main_list) {
+                    System.out.print("\n" + s);
+                    return_result += "{ \"" + main_col + "\": \"" + s + "\", ";
+                    for (String ss : sec_list) {
+                        System.out.print(" " + ss + ": " + ((table.get(s,ss) == null) ? "0" : table.get(s,ss)));
+                        return_result += "\"" + ss + "\": \"" + ((table.get(s,ss) == null) ? "0" : table.get(s,ss)) + "\", ";
+
+                    }
+                    return_result = return_result.substring(0,return_result.length()-2);
+                    return_result +="}, ";
+                }
+                return_result = return_result.substring(0,return_result.length()-2);
+                return_result += "], \"gridColumns\": [";
+                for(String s : header_list)
+                    return_result += "\"" + s + "\",";
+                return_result = return_result.substring(0,return_result.length()-1);
+                return_result += "]}";
+
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                connection1.disconnect();
+                connection2.disconnect();
+                connection3.disconnect();
+
+            }
+
+            System.out.println("Tempo gasto: " + (System.currentTimeMillis()-time_start)/1000);
+            connection1.disconnect();
+            connection2.disconnect();
+            connection3.disconnect();
+            return return_result;
+        }
+        return "ERROR!";
+    }
+
+    @RequestMapping(value = "/createDerivatedCol", produces = "application/json")
+    @ResponseBody
+    public String createDerivatedCol(@RequestParam(value = "path") String path,
+                                     @RequestParam(value = "col_name") String col_name,
+                                     @RequestParam(value = "start") int start,
+                                     @RequestParam(value = "end") int end,
+                                     @RequestParam(value = "new_col_name") String new_col_name) {
+        SQLiteManager connection = new SQLiteManager(path);//Instanciar nova conexão
+        connection.connect();//Conectar ao banco de dados
+        long start_time = System.currentTimeMillis();
+        if(connection.isConnected())
+        {
+            String query = "ALTER TABLE dbf_import ADD COLUMN " + new_col_name + " text"+ ";";
+            connection.execute(query);//Executa query
+            connection.commit();//Atualiza o banco de dados
+            query = "UPDATE dbf_import SET " + new_col_name + "=SUBSTR(" + col_name + "," + start + "," + ((end-start)+1) + ");";
+            connection.execute(query);
+            connection.commit();
+            return "Tempo gasto: " + ((System.currentTimeMillis() - start_time)/1000) + " segundos.";
+        }
+
+
+        return "Erro!";
     }
 
     //Function to retrive sorted columns

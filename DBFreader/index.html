@@ -179,12 +179,12 @@
   </nav>
   <div id="app">
   <div id="colunas">
-    <div class="panel-body">
+    <div class="panel-body" style="height: 100%">
       <h1>Colunas</h1>
-      <div class="checkbox" v-for="field in fields">
+      <div class="checkbox container-fluid" v-for="field in fields">
         <label>
           <input type="checkbox" v-model="field.visible">
-          {{ field.title == '' ? field.name.replace('__', '') : field.title | capitalize }}:{{field.name}}
+          {{ field.title == '' ? field.name.replace('__', '') : field.title | capitalize }} : {{field.name}}
         </label>
       </div>
     </div></div>
@@ -217,11 +217,7 @@
             <span class="glyphicon glyphicon-signal"></span> Gerar Gráfico
           </button>
         </div>
-        <!--<div class="form-inline form-group pull-right">
-          <button class="btn btn-default"  id="settingsBtn">
-                          <span class="glyphicon glyphicon-cog"></span> Configurações
-                      </button>
-        </div>-->
+
         <div class="form-inline form-group pull-right">
           <button id="select-file" class="btn btn-default" data-toggle="modal" >
                           <span class="glyphicon glyphicon-level-up"></span> Abrir DBF
@@ -237,11 +233,21 @@
             <span class="glyphicon glyphicon-copy"></span> Converter DBF para SQLite
           </button>
         </div>
-          <div class="form-inline form-group pull-right">
-              <button id="save-config" class="btn btn-default" @click="saveConfig">
-                  <span class="glyphicon glyphicon-copy"></span> Salvar Configurações
-              </button>
-          </div>
+        <div class="form-inline form-group pull-right">
+          <button id="save-config" class="btn btn-default" @click="saveConfig">
+            <span class="glyphicon glyphicon-copy"></span> Salvar Configurações
+          </button>
+        </div>
+        <div class="form-inline form-group pull-right">
+          <button id="create-column" class="btn btn-default" data-target="#createColumnModal" data-toggle="modal">
+            <span class="glyphicon glyphicon-copy"></span> Criar Coluna Derivada
+          </button>
+        </div>
+        <div class="form-inline form-group pull-right">
+          <button id="consultaBtn" class="btn btn-default" data-target="#consultaModal" data-toggle="modal">
+            <span class="glyphicon glyphicon-copy"></span> Realizar Consulta
+          </button>
+        </div>
 
       </div>
     </div>
@@ -255,20 +261,7 @@
             <h4 class="modal-title">Gráficos</h4>
           </div>
           <div class="modal-body">
-            <!--<div class="form-group">
-              <div class="checkbox">
-                <label>
-                                    <input type="checkbox" v-model="multiSort"> Multisort (use Alt+Click)
-                                </label>
-              </div>
-            </div>-->
-            <!--<div class="form-group">
-              <label>Pagination:</label>
-              <select class="form-control" v-model="paginationComponent">
-                                <option value="vuetable-pagination">vuetable-pagination</option>
-                                <option value="vuetable-pagination-dropdown">vuetable-pagination-dropdown</option>
-                            </select>
-            </div>-->
+
             <div class="form-group">
               <label>Tipos do Gráfico:</label>
               <select class="form-control" v-model="">
@@ -365,6 +358,98 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="createColumnModal" >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+            <h4 class="modal-title">Criar Coluna Derivada</h4>
+          </div>
+          <div class="modal-body">
+
+            <div class="form-group">
+              <label>Coluna Original:</label>
+              <select class="form-control" v-model="originalCol">
+                <option v-for="option in fields" v-bind:value="option.name">{{ option.name }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Nova Coluna:</label>
+              <input v-model="newCol.name" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Primeiro caractere:</label>
+              <input v-model="newCol.start" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Último caractere:</label>
+              <input v-model="newCol.end" class="form-control">
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="createDerivatedCol">Criar</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="consultaModal" >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+            <h4 class="modal-title">Realizar Consulta</h4>
+          </div>
+          <div class="modal-body">
+
+            <div class="form-group">
+              <label>Linhas:</label>
+              <select class="form-control" v-model="consulta.mainCol">
+                <option v-for="option in fields" v-bind:value="option.name">{{ option.name }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Colunas:</label>
+              <select class="form-control" v-model="consulta.secCol">
+                <option v-for="option in fields" v-bind:value="option.name">{{ option.name }}</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary" v-on:click="realizarConsulta">Realizar Consulta</button>
+            <div class="table-responsive">
+              <div class="vuetable-wrapper">
+            <table class="table table-bordered table-striped table-hover">
+              <thead>
+              <tr>
+                <th v-for="key in gridColumns">
+                  {{ key }}
+                </th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="entry in gridData">
+                <td v-for="key in gridColumns">
+                  {{entry[key]}}
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
     <div class="table-responsive">
       <vuetable v-ref:vuetable api-url="http://localhost:8080/api" pagination-path="" :fields="fields" :sort-order="sortOrder"
         :multi-sort="multiSort" table-class="table table-bordered table-striped table-hover" ascending-icon="glyphicon glyphicon-chevron-up"

@@ -2,7 +2,7 @@
 
 var E_SERVER_ERROR = 'Error na communicação com o Servidor'
 const {dialog} = require('electron').remote
-const storage = require('electron-storage')
+
 var path = ""
 
 //Adiciona Listener no botão de abrir dbf para abrir a tela de seleção de arquivo DBF
@@ -172,6 +172,16 @@ Vue.component('my-detail-row', {
 new Vue({
 	el: '#app',
 	data: {
+		gridColumns: ['name', 'power'],
+		gridData: [
+			{ name: 'Chuck Norris', power: Infinity },
+			{ name: 'Bruce Lee', power: 9000 },
+			{ name: 'Jackie Chan', power: 7000 },
+			{ name: 'Jet Li', power: 8000 }
+		],
+		originalCol: '',
+		newCol: {name: '', start: '', end: ''},
+		consulta: {mainCol: '', secCol: '', style: 'none', data: []},
 		searchFor: '',
 		fields: tableColumns,
 		sortOrder: [{
@@ -286,22 +296,96 @@ new Vue({
 				this.$broadcast('vuetable:refresh')
 				tableColumns = this.fields;
 			})
-			storage.isPathExists(app.filepath+".json")
-				.then(itDoes => {
-					if (itDoes) {
-						console.log('pathDoesExists !')
-						storage.get(filePath)
-							.then(data => {
 
-								console.log(data);
-							})
-							.catch(err => {
-								console.error(err);
-							});
-					}
-				});
 
         },
+		createDerivatedCol: function()
+		{
+			let self = this;
+
+
+
+			swal({
+				title: "Criar Coluna Derivada?",
+				text: "Deseja criar a coluna " + this.newCol.name + " na tabela sqlite? A atualização da tabela pode levar algum tempo.",
+				type: "warning",
+				showCancelButton: true,
+				closeOnConfirm: true,
+				confirmButtonText: "Sim",
+				confirmButtonColor: "#1fb3ec"
+			}, function() {
+				$.ajax(
+					{
+						type: "get",
+						url: "http://localhost:8080/createDerivatedCol",
+						data: self.moreParams[0]+"&start="+self.newCol.start+"&end="+self.newCol.end+"&col_name="+self.originalCol+"&new_col_name="+self.newCol.name,
+						beforeSend: function(){
+							self.$broadcast('vuetable:show-loading')
+						},
+						complete: function(){
+							self.$broadcast('vuetable:hide-loading');
+						},
+						success: function(data){
+							self.$nextTick(function () {
+								self.$broadcast('vuetable:refresh')
+								tableColumns = this.fields;
+							})
+							swal("Sucesso!", "", "success");
+
+						},
+						error: function(data)
+						{
+							swal("Oops", "Algum erro ocorreu!\n"+data, "error");
+						}
+					}
+				)
+
+			});
+		},
+		realizarConsulta: function()
+		{
+			let self = this;
+
+
+
+			swal({
+				title: "Realizar consulta?",
+				text: "Deseja realizar a consulta relacionando a coluna " + self.consulta.mainCol + " com a coluna " + self.consulta.secCol + "  na tabela sqlite? A realização da consulta pode levar algum tempo.",
+				type: "warning",
+				showCancelButton: true,
+				closeOnConfirm: true,
+				confirmButtonText: "Sim",
+				confirmButtonColor: "#1fb3ec"
+			}, function() {
+				$.ajax(
+					{
+						type: "get",
+						url: "http://localhost:8080/relacionaCol",
+						data: self.moreParams[0]+"&main_col="+self.consulta.mainCol+"&sec_col="+self.consulta.secCol,
+						complete: function(){
+
+						},
+						success: function(data){
+							//self.consulta.data = data;
+							/*self.consulta.gridColumns = [];
+							self.consulta.gridColumns = data.header;
+							self.consulta.gridData =*/
+							self.gridData = data.gridData;
+							self.gridColumns = data.gridColumns;
+
+							//self.consulta.style = 'block';
+
+						},
+						error: function(data)
+						{
+							swal("Oops", "Algum erro ocorreu!\n"+data, "error");
+							console.log(data);
+						}
+					}
+				)
+
+			});
+		},
         convertDBF: function(dbf_path, sqlitepath)
         {
         	var self = this;
@@ -510,3 +594,6 @@ new Vue({
 		}
 	}
 })
+
+
+
