@@ -1,14 +1,19 @@
-const electron = require('electron')
-// Module to control application life.
-const app = electron.app
-// Module to create native browser window.
+const execFileSync  = require('child_process').execFileSync
+const electron      = require('electron')
+const path          = require('path')
+const url           = require('url')
+
+const app           = electron.app
 const BrowserWindow = electron.BrowserWindow
-const path = require('path')
-const url = require('url')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+
+execFileSync(
+    path.join(__dirname, 'gradlew.bat'), ['bootrun'],
+    { cwd: __dirname }
+)
 
 function createWindow () {
   // Create the browser window.
