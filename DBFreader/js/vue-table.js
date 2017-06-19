@@ -642,7 +642,7 @@ exports.default = {
 				console.log(app.fieldInfo);
                 this.normalizeFields();
 				app.__vue__._data.fields = app.fieldInfo;
-
+				app.__vue__.loadFileRefresh();
 				self.tableData = self.getObjectValue(response.data, self.dataPath, null);
 				console.log(self.tableData);
                 self.tablePagination = self.getObjectValue(response.data, self.paginationPath, null);
@@ -666,6 +666,8 @@ exports.default = {
                 self.hideLoadingAnimation(wrapper);
             });
             $('#teste-pag').html($('.vuetable-pagination-component').html())
+
+
         },
         getAllQueryParams: function getAllQueryParams() {
             var params = [this.queryParams.sort + '=' + this.getSortParam(), this.queryParams.page + '=' + this.currentPage, this.queryParams.perPage + '=' + this.perPage].join('&');

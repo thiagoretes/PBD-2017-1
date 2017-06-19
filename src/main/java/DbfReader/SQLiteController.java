@@ -1,14 +1,14 @@
 package DbfReader;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.bind.annotation.*;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.HashBasedTable;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
 
 /**
  * Created by Thiago Retes
@@ -83,9 +85,26 @@ public class SQLiteController {
 
     @RequestMapping(value = "/relacionaCol", produces = "application/json")
     @ResponseBody
-    public String relacionaColunas(@RequestParam(value = "path") String path,
+    public String relacionaColunas(@RequestBody String json) {
+    /*public String relacionaColunas(@RequestParam(value = "path") String path,
                                      @RequestParam(value = "main_col") String main_col,
-                                     @RequestParam(value = "sec_col") String sec_col) {
+                                     @RequestParam(value = "sec_col") String sec_col) {*/
+        ObjectMapper objectMapper = new ObjectMapper(); //Instancia um mapeador de objetos para o json da biblioteca Jackson
+        String main_col = "";
+        String sec_col = "";
+        String path = "";
+        String where_clause = "";
+        try {
+            JsonNode node = objectMapper.readValue(json, JsonNode.class);
+            main_col = node.get("main_col").asText();
+            sec_col = node.get("sec_col").asText();
+            path = node.get("path").asText();
+            where_clause = node.get("filters").asText();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //String main_col =
         long time_start = System.currentTimeMillis();
         SQLiteManager connection1 = new SQLiteManager(path);//Instanciar nova conexão
         connection1.connect();//Conectar ao banco de dados
@@ -134,7 +153,7 @@ public class SQLiteController {
                 while(secondary.next())
                 {
 
-                    query2 = "SELECT " + main_col + ", COUNT(rowid) AS \'" + secondary.getString(i) + "\' FROM dbf_import WHERE " + sec_col + "=\'" + secondary.getString(i) + "\' GROUP BY " + main_col + ";";
+                    query2 = "SELECT " + main_col + ", COUNT(rowid) AS \'" + secondary.getString(i) + "\' FROM dbf_import WHERE " + sec_col + "=\'" + secondary.getString(i) + "\' AND " + where_clause +  " GROUP BY " + main_col + ";";
                     //System.out.println("Passou query3");
 
                     header_list.add(secondary.getString(i));
@@ -302,7 +321,7 @@ public class SQLiteController {
 
                 for (int i = 1; i <= colCount; i++) {
                     result += "{ \"name\": \"" + rsmd.getColumnName(i) + "\", ";
-                    result += "\"title\": " + "\"" + rsmd.getColumnName(i) + "\", ";
+                    /*result += "\"title\": " + "\"" + rsmd.getColumnName(i) + "\", ";*/
                     result += "\"sortField\": \"" + rsmd.getColumnName(i) + "\", ";
                     result += "\"visible\": \"true\"}, ";
 

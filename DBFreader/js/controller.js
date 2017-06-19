@@ -6,6 +6,19 @@ var Chart = require('chart.js');
 var fs = require('fs');
 var path = ""
 
+//Funções para utilizar várias modal
+$(document).on('show.bs.modal', '.modal', function () {
+	var zIndex = 1040 + (10 * $('.modal:visible').length);
+	$(this).css('z-index', zIndex);
+	setTimeout(function() {
+		$('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+	}, 0);
+});
+
+$(document).on('hidden.bs.modal', '.modal', function () {
+	$('.modal:visible').length && $(document.body).addClass('modal-open');
+});
+
 //Adiciona Listener no botão de abrir dbf para abrir a tela de seleção de arquivo DBF
 document.getElementById('select-file').addEventListener('click', function () {
 	dialog.showOpenDialog(function (fileNames) {
@@ -50,6 +63,7 @@ document.getElementById('select-sqlite').addEventListener('click', function () {
 			console.log("No file selected");
 		} else {
 			app.filepath = fileNames[0];
+			app.__vue__.tableName = fileNames[0].split('\\').pop().split('/').pop();//Coloca o nome do arquivo na variavel que aparece no topo da pagina
 			console.log(fileNames);
 			app.__vue__.loadSQLite();
 
@@ -173,13 +187,18 @@ Vue.component('my-detail-row', {
 new Vue({
 	el: '#app',
 	data: {
+		fileType: 0,
 		gridColumns: [],
 		gridData: [
 
 		],
+		consultaHoldLoad: {},
+		consultasSalvas: [],
 		originalCol: '',
 		newCol: {name: '', start: '', end: ''},
-		consulta: {mainCol: '', secCol: '', style: 'none', data: []},
+		newFilter: { col: '', operation: '', value: ''},
+		consulta: {mainCol: '', secCol: '', style: 'none', data: [], filters: [], description: ''},
+		filterOperations: ["=", ">=", "<=", "<>", ">", "<", "LIKE", "IN"],
 		searchFor: '',
 		fields: tableColumns,
 		sortOrder: [{
@@ -259,6 +278,44 @@ new Vue({
 		/**
 		 * Other functions
 		 */
+		salvarConsulta: function()
+		{
+			var copiedConsulta = jQuery.extend({}, this.consulta)
+			var filters = jQuery.extend([], this.consulta.filters)
+			copiedConsulta.filters = filters;
+			this.consultasSalvas.push(copiedConsulta);
+
+			this.saveConfig();
+		},
+		deletarConsulta: function()
+		{
+			var index = this.consultasSalvas.indexOf(this.consultaHoldLoad);
+			if(index > -1)
+				this.consultasSalvas.splice(index,1);
+
+
+			this.saveConfig();
+		},
+		precarregarConsulta: function(selectedConsulta)
+		{
+			this.consultaHoldLoad = selectedConsulta;
+		},
+		carregarConsulta: function()
+		{
+			this.consulta = this.consultaHoldLoad;
+		},
+		removeFilter: function(filter)
+		{
+			var index = this.consulta.filters.indexOf(filter);
+			if(index > -1)
+				this.consulta.filters.splice(index,1);
+		},
+		addFilterConsulta: function()
+		{
+			this.consulta.filters.push(this.newFilter);
+			this.newFilter = {value: '', operation: '', col: ''};
+
+		},
 		loadDBF: function()
 		{
 			this.moreParamsOld = [
@@ -275,7 +332,7 @@ new Vue({
 				this.$broadcast('vuetable:refresh')
 				tableColumns = this.fields;
 			})
-			
+			this.fileType = 0;
 
 		},
 		loadSQLite: function()
@@ -297,7 +354,7 @@ new Vue({
 
 
 			})
-
+			this.fileType = 1;
 
 
 
@@ -315,16 +372,44 @@ new Vue({
 				}
 					data = JSON.parse(data);
 					if(data.fields != null) app.__vue__.fields = data["fields"];
+					if(data.fields != null) self.savedFields = data["fields"];
 					if(data.gridData != null) self.gridData = data.gridData;
 					if(data.gridColumns != null) self.gridColumns = data.gridColumns;
 					if(data.consulta != null) self.consulta = data.consulta;
 					if(data.moreParams != null) self.moreParams = data.moreParams;
 					if(data.newCol != null) self.newCol = data.newCol;
 					if(data.originalCol != null) self.originalCol = data.originalCol;
+					if(data.consultasSalvas != null) self.consultasSalvas = data.consultasSalvas;
 
 
 				// Change how to handle the file content
 				console.log("The file content is : " + data);
+			});
+		},
+		loadFileRefresh: function()
+		{
+			var self = this;
+			save_file = app.filepath+".json";
+
+			fs.readFile(save_file, 'utf-8', (err, data) => {
+				if(err){
+					/*alert("An error ocurred reading the file :" + err.message);*/
+					return;
+				}
+				data = JSON.parse(data);
+				if(data.fields != null) app.__vue__.fields = data["fields"];
+				if(data.fields != null) self.savedFields = data["fields"];
+				if(data.gridData != null) self.gridData = data.gridData;
+				if(data.gridColumns != null) self.gridColumns = data.gridColumns;
+				if(data.consulta != null) self.consulta = data.consulta;
+				if(data.moreParams != null) self.moreParams = data.moreParams;
+				if(data.newCol != null) self.newCol = data.newCol;
+				if(data.originalCol != null) self.originalCol = data.originalCol;
+				if(data.consultasSalvas != null) self.consultasSalvas = data.consultasSalvas;
+
+
+				// Change how to handle the file content
+				/*console.log("The file content is : " + data);*/
 			});
 		},
 		createDerivatedCol: function()
@@ -382,6 +467,16 @@ new Vue({
 		realizarConsulta: function()
 		{
 			let self = this;
+			var teste = "";
+			for(i = 0; i < app.__vue__.consulta.filters.length; i++)
+			{
+				console.log(teste);
+				teste += " " + app.__vue__.consulta.filters[i].col + " " + app.__vue__.consulta.filters[i].operation + " \'" + app.__vue__.consulta.filters[i].value + "\' AND";
+			}
+			teste = teste.substring(0,teste.length - 3);
+			console.log(teste);
+			var jsonObject = { path: app.filepath,
+			main_col: app.__vue__.consulta.mainCol, sec_col: app.__vue__.consulta.secCol, filters: teste};
 
 
 
@@ -396,9 +491,14 @@ new Vue({
 			}, function() {
 				$.ajax(
 					{
-						type: "get",
+						/*type: "get",
 						url: "http://localhost:8080/relacionaCol",
-						data: self.moreParams[0]+"&main_col="+self.consulta.mainCol+"&sec_col="+self.consulta.secCol,
+						data: self.moreParams[0]+"&main_col="+self.consulta.mainCol+"&sec_col="+self.consulta.secCol,*/
+						type: "POST",
+						contentType: "application/json",
+						dataType: "json",
+						url: "http://localhost:8080/relacionaCol",
+						data : JSON.stringify(jsonObject),
 						complete: function(){
 
 						},
@@ -425,7 +525,7 @@ new Vue({
 		},
         convertDBF: function(dbf_path, sqlitepath)
         {
-        	var self = this;
+        	let self = this;
 
 
 
@@ -485,6 +585,7 @@ new Vue({
         },
 		setFilter: function () {
 			this.moreParams = [];
+			var i = 0;
 			for(i=0; i < this.moreParamsOld.length; i++)
 				this.moreParams[i] = this.moreParamsOld[i]
 			this.moreParams[++i] = 'filter=' + this.searchFor
@@ -507,6 +608,7 @@ new Vue({
 				gridData: self.gridData,
 				gridColumns: self.gridColumns,
 				consulta: self.consulta,
+				consultasSalvas: self.consultasSalvas,
 				moreParams: self.moreParams,
 				newCol: self.newCol,
 				originalCol: self.originalCol,
@@ -516,8 +618,8 @@ new Vue({
 				if(err){
 					alert("An error ocurred creating the file "+ err.message)
 				}
-
-				alert("The file has been succesfully saved");
+				/*swal("Sucesso!", "Configurações Salvas", "success");*/
+				/*alert("The file has been succesfully saved");*/
 			});
 			/*$.ajax({
 				type: 'POST',
