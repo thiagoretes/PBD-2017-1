@@ -594,6 +594,7 @@ new Vue({
 						});
 					}
 				}
+				app.__vue__.graphcsValues = [];
 			}
 		},
 		realizarConsulta: function()
