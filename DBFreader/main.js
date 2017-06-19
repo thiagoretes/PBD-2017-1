@@ -10,10 +10,10 @@ const BrowserWindow = electron.BrowserWindow
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-execFileSync(
+/*execFileSync(
     path.join(__dirname, 'gradlew.bat'), ['bootrun'],
     { cwd: __dirname }
-)
+)*/
 
 function createWindow () {
   // Create the browser window.

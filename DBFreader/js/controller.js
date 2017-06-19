@@ -187,6 +187,8 @@ Vue.component('my-detail-row', {
 new Vue({
 	el: '#app',
 	data: {
+		graphcsValues: [],
+		tipoGrafico: '',
 		fileType: 0,
 		gridColumns: [],
 		gridData: [
@@ -457,11 +459,141 @@ new Vue({
 		},
 		gerarGraficos: function(){
 
-			if(app.__vue__.gridColumns.length == 0 || app.__vue__.gridData == 0){
-				swal("Ops", "Você tem que realizar uma consulta para poder gerar o grafico a partir dela!\n", "error");
+			
+			if(app.__vue__.tipoGrafico == "" || app.__vue__.graphcsValues.length == 0){
+				swal("Ops", "Você tem que preencher todos os campos para gerar o grafico!\n", "error");
+			}
+			else if(app.__vue__.graphcsValues.length == 1){
+				swal("Oops", "Você tem que escolher pelo menos dois campos no checkbox", "warning");
 			}
 			else{
+				var labelx = [];
+				var yAxis =[];
+				var xAxis = [];
+				var setOfData = [];
+
+				var randomColorGenerator = function () { 
+				    return '#' + (Math.random().toString(16) + '0000000').slice(2, 8); 
+				};
+
+				var randomNumberGenerator = function () { 
+				    return (Math.floor(Math.random()*252)+2);
+				};
+
+				for(var i=0; i<app.__vue__.gridData.length;i++){
+					xAxis.push(app.__vue__.gridData[i][app.__vue__.graphcsValues[0]]);
+				}
+
+				var ctx = $("#myChart");
+				var chart;
+
+				var button = document.getElementById("submitButton");
+				submitButton.addEventListener("click", function(){
+				    chart.destroy();
+				});
 				
+				if(app.__vue__.tipoGrafico == "line"){
+
+					for(var i=1; i<app.__vue__.graphcsValues.length;i++){
+						for(var j=0; j<app.__vue__.gridData.length;j++){
+							yAxis.push(app.__vue__.gridData[j][app.__vue__.graphcsValues[i]]);
+						}
+						setOfData.push({
+							label: app.__vue__.graphcsValues[i],
+							data: yAxis,
+							borderColor: randomColorGenerator(),
+							fill: false
+						});
+						yAxis = [];
+					}
+
+						chart = new Chart(ctx,{
+						type: 'line',
+						data: {
+							labels: xAxis,
+							datasets: setOfData
+						}
+					});
+				}
+				else if(app.__vue__.tipoGrafico == "bar"){
+
+					for(var i=1; i<app.__vue__.graphcsValues.length;i++){
+						for(var j=0; j<app.__vue__.gridData.length;j++){
+							yAxis.push(app.__vue__.gridData[j][app.__vue__.graphcsValues[i]]);
+						}
+						setOfData.push({
+							label: app.__vue__.graphcsValues[i],
+							data: yAxis,
+							backgroundColor: randomColorGenerator()
+						});
+						yAxis = [];
+					}
+
+					chart = new Chart(ctx,{
+						type: 'bar',
+						data: {
+							labels: xAxis,
+							datasets: setOfData
+						}
+					});
+				}
+				else if(app.__vue__.tipoGrafico == "pie"){
+					if(app.__vue__.graphcsValues.length >2){
+						swal("Oops", "No tipo de grafico escolhido você só pode escolher dois campos!", "warning");
+					}
+					else{
+						yAxis = [];
+						var arrayOfColors = [];
+						for(var i=0; i<app.__vue__.gridData.length;i++){
+							yAxis.push(app.__vue__.gridData[i][app.__vue__.graphcsValues[1]]);
+							arrayOfColors.push(randomColorGenerator());
+						}
+
+						setOfData.push({
+							label: app.__vue__.graphcsValues[1],
+							data: yAxis,
+							backgroundColor: arrayOfColors
+						});
+
+						chart = new Chart(ctx,{
+							type: 'pie',
+							data: {
+								labels: xAxis,
+								datasets: setOfData
+							}
+						});
+					}
+				}
+				else{
+
+					if(app.__vue__.graphcsValues.length >2){
+						swal("Oops", "No tipo de grafico escolhido você só pode escolher dois campos!", "warning");
+					}
+					else{
+						var arrayOfColors = [];
+						for(var i=1; i<app.__vue__.graphcsValues.length;i++){
+							for(var j=0; j<app.__vue__.gridData.length;j++){
+								yAxis.push(app.__vue__.gridData[j][app.__vue__.graphcsValues[i]]);
+								arrayOfColors.push(`rgba(${[randomNumberGenerator(),randomNumberGenerator(),randomNumberGenerator()].join(',')}, 0.2)`);
+							}
+
+							setOfData.push({
+								label: app.__vue__.graphcsValues[i],
+								data: yAxis,
+								backgroundColor: arrayOfColors
+							});
+							yAxis = [];
+						}
+
+						chart = new Chart(ctx,{
+							type: 'polarArea',
+							data: {
+								labels: xAxis,
+								datasets: setOfData
+							}
+						});
+					}
+				}
 			}
 		},
 		realizarConsulta: function()

@@ -20,7 +20,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
 
-
   <style>
     /* Move down content because we have a fixed navbar that is 50px tall */
     a.list-group-item:focus{
@@ -256,11 +255,6 @@
           </button>
         </div>
         <div class="form-inline form-group pull-left" v-show="fileType === 1">
-          <button class="btn btn-default" data-toggle="modal" data-target="#graphcsModal">
-            <span class="glyphicon glyphicon-signal"></span> Gerar Gráfico
-          </button>
-        </div>
-        <div class="form-inline form-group pull-left" v-show="fileType === 1">
           <button id="create-column" class="btn btn-default" data-target="#createColumnModal" data-toggle="modal">
             <span class="glyphicon glyphicon-object-align-top"></span> Criar Coluna Derivada
           </button>
@@ -273,54 +267,6 @@
 
       </div>
     </div>
-    <div class="modal fade" id="graphcsModal" >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">
-                            <span>&times;</span>
-                        </button>
-            <h4 class="modal-title">Gráficos</h4>
-          </div>
-          <div class="modal-body">
-
-            <div class="form-group">
-              <label>Tipos do Gráfico:</label>
-              <select class="form-control" v-model="">
-                                <option value='linha'>Linha</option>
-                                <option value='coluna'>Coluna</option>
-                                <option value='pizza'>Pizza</option>
-                                <option value='histograma'>Área</option>
-                            </select>
-            </div>
-            
-            <div class="form-group">
-              <canvas id="myChart" width="400" height="400"></canvas>
-              <!--div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title">Colunas</h4>
-                </div>
-                <div class="panel">
-                  <div class="checkbox" v-for="field in fields">
-                    <label>
-                      <input class='check' type="checkbox">
-                      {{ field.title == '' ? field.name.replace('__', '') : field.title | capitalize }}:{{field.name}}
-                    </label>
-                  </div>
-                </div>
-              </div-->
-            </div>
-          </div>     
-    
-
-          <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click = "gerarGraficos">Gerar Gráfico</button>
-              <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
 
     <div class="modal fade" id="settingsModal" >
       <div class="modal-dialog">
@@ -511,6 +457,9 @@
             <button type="button" class="btn btn-primary" v-on:click="realizarConsulta">Realizar Consulta</button>
             <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#saveConsultaModal" >Salvar Consulta</button>
             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#loadConsultaModal">Carregar Consulta</button>
+            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#graphcsModal">
+              <span class="glyphicon glyphicon-signal"></span> Gerar Gráfico</button>
+            
             <div class="table-responsive">
               <div class="vuetable-wrapper">
             <table class="table table-bordered table-striped table-hover">
@@ -537,6 +486,53 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <div class="modal fade" id="graphcsModal" >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+                <span>&times;</span>
+            </button>
+            <h4 class="modal-title">Gráficos</h4>
+          </div>
+          <div class="modal-body">
+
+            <div class="form-group">
+              <label>Tipo do Gráfico:</label>
+              <select class="form-control" v-model="tipoGrafico">
+                  <option value='line'>Linha</option>
+                  <option value='bar'>Barras</option>
+                  <option value='pie'>Pizza</option>
+                  <option value='polarArea'>Área Polar</option>
+             </select>
+            </div>
+            <div class="form-group">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">Colunas</h4>
+                </div>
+                <div class="panel">
+                  <div class="checkbox" v-for="field in gridColumns">
+                    <label>
+                      <input class='check' type="checkbox" value = {{field}} v-model="graphcsValues">
+                        {{ field }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <canvas id="myChart" width="400" height="400"></canvas>
+          </div>     
+    
+
+          <div class="modal-footer">
+              <button type="button" id = "submitButton" class= "btn btn-default" v-on:click = "gerarGraficos">Gerar Gráfico</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="table-responsive">
@@ -575,6 +571,8 @@
   <script src="js/vue-resource.min.js"></script>
   <script src="js/vue-table.js"></script>
   <script src="js/controller.js"></script>
+  <script async="" src="https://cdn.rawgit.com/eligrey/canvas-toBlob.js/f1a01896135ab378aa5c0118eadd81da55e698d8/canvas-toBlob.js"/>
+  <script async="" src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"/>
   <!--script>$('#settingsModal').modal({
     detachable: false,
     onVisible: function() {
