@@ -632,11 +632,18 @@ exports.default = {
             var self = this;
 
             var wrapper = document.querySelector(this.tableWrapper);
+            
             this.showLoadingAnimation(wrapper);
+            console.log(this.tableWrapper);
+            console.log(wrapper);
+            
+            
+
 
             var url = this.apiUrl + '?' + this.getAllQueryParams();
             console.log(url);
             this.$http.get(url, this.httpData, this.httpOptions).then(function (response) {
+                console.log("Rodou LoadData!");
 
 				app.fieldInfo = self.getObjectValue(response.data, 'fields', null);
 				console.log(app.fieldInfo);
@@ -665,7 +672,7 @@ exports.default = {
 
                 self.hideLoadingAnimation(wrapper);
             });
-            $('#teste-pag').html($('.vuetable-pagination-component').html())
+            //$('#teste-pag').html($('.vuetable-pagination-component').html())
 
 
         },
@@ -688,6 +695,7 @@ exports.default = {
             if (wrapper !== null) {
                 this.removeClass(wrapper, this.loadingClass);
             }
+            console.log("hide animation");
             this.dispatchEvent('loaded');
         },
         getTitle: function getTitle(field) {
@@ -1179,7 +1187,7 @@ exports.default = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div v-html=\"teste123\" class=\"{{wrapperClass}}\">\n    <a @click=\"loadPage('prev')\" class=\"{{linkClass}} {{isOnFirstPage ? disabledClass : ''}}\">\n        <i :class=\"icons.prev\"></i>\n    </a>\n    <select id=\"vuetable-pagination-dropdown\" class=\"{{dropdownClass}}\" @change=\"selectPage($event)\">\n        <template v-for=\"n in totalPage\">\n            <option class=\"{{pageClass}}\" value=\"{{n+1}}\">\n                {{pageText}} {{n+1}}\n            </option>\n        </template>\n    </select>\n    <a @click=\"loadPage('next')\" class=\"{{linkClass}} {{isOnLastPage ? disabledClass : ''}}\">\n        <i :class=\"icons.next\"></i>\n    </a>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div  class=\"{{wrapperClass}}\">\n    <a @click=\"loadPage('prev')\" class=\"{{linkClass}} {{isOnFirstPage ? disabledClass : ''}}\">\n        <i :class=\"icons.prev\"></i>\n    </a>\n    <select id=\"vuetable-pagination-dropdown\" class=\"{{dropdownClass}}\" @change=\"selectPage($event)\">\n        <template v-for=\"n in totalPage\">\n            <option class=\"{{pageClass}}\" value=\"{{n+1}}\">\n                {{pageText}} {{n+1}}\n            </option>\n        </template>\n    </select>\n    <a @click=\"loadPage('next')\" class=\"{{linkClass}} {{isOnLastPage ? disabledClass : ''}}\">\n        <i :class=\"icons.next\"></i>\n    </a>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)

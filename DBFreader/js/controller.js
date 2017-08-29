@@ -73,48 +73,7 @@ document.getElementById('select-sqlite').addEventListener('click', function () {
 
 // fields definition
 var tableColumns = [
-	/*
-	{
-		name: 'id',
-		title: '',
-		dataClass: 'text-center',
-		callback: 'showDetailRow'
-	},
-	{
-		name: 'name',
-		sortField: 'name',
-	},
-	{
-		name: 'email',
-		sortField: 'email',
-	},
-	{
-		name: 'nickname',
-		sortField: 'nickname',
-		callback: 'allCap'
-	},
-	{
-		name: 'birthdate',
-		sortField: 'birthdate',
-		callback: 'formatDate|D/MM/Y'
-	},
-	{
-		name: 'gender',
-		sortField: 'gender',
-		titleClass: 'text-center',
-		dataClass: 'text-center',
-		callback: 'gender'
-	},
-	{
-		name: '__component:custom-action',
-		title: "Component",
-		titleClass: 'center aligned',
-		dataClass: 'custom-action center aligned',
-	},
-	{
-		name: '__actions',
-		dataClass: 'text-center',
-	}*/
+	
 ]
 
 Vue.config.debug = true
@@ -148,28 +107,6 @@ Vue.component('custom-action', {
 
 Vue.component('my-detail-row', {
 	template: [
-		/*'<div class="detail-row ui form" @click="onClick($event)">',
-		'<div class="inline field">',
-		'<label>Nome: </label>',
-		'<span>{{rowData.name}}</span>',
-		'</div>',
-		'<div class="inline field">',
-		'<label>Email: </label>',
-		'<span>{{rowData.email}}</span>',
-		'</div>',
-		'<div class="inline field">',
-		'<label>Apelido: </label>',
-		'<span>{{rowData.nickname}}</span>',
-		'</div>',
-		'<div class="inline field">',
-		'<label>Data de Nascimento: </label>',
-		'<span>{{rowData.birthdate}}</span>',
-		'</div>',
-		'<div class="inline field">',
-		'<label>Gênero: </label>',
-		'<span>{{rowData.gender}}</span>',
-		'</div>',
-		'</div>',*/
 	].join(''),
 	props: {
 		rowData: {
@@ -435,7 +372,7 @@ new Vue({
 						url: "http://localhost:8080/createDerivatedCol",
 						data: self.moreParams[0]+"&start="+self.newCol.start+"&end="+self.newCol.end+"&col_name="+self.originalCol+"&new_col_name="+self.newCol.name,
 						beforeSend: function(){
-							self.$broadcast('vuetable:show-loading')
+							self.$broadcast('vuetable:show-loading');
 						},
 						complete: function(){
 							self.$broadcast('vuetable:hide-loading');
@@ -622,6 +559,7 @@ new Vue({
 				confirmButtonText: "Sim",
 				confirmButtonColor: "#1fb3ec"
 			}, function() {
+				$("#consulta").addClass("loading");
 				$.ajax(
 					{
 						/*type: "get",
@@ -642,6 +580,7 @@ new Vue({
 							self.consulta.gridData =*/
 							self.gridData = data.gridData;
 							self.gridColumns = data.gridColumns;
+							$("#consulta").removeClass("loading");
 
 							//self.consulta.style = 'block';
 
@@ -650,6 +589,7 @@ new Vue({
 						{
 							swal("Oops", "Algum erro ocorreu!\n"+data, "error");
 							console.log(data);
+							$("#consulta").removeClass("loading");
 						}
 					}
 				)
@@ -680,7 +620,7 @@ new Vue({
                             	console.log(app.filepath);
                             	console.log(dbf_path);
                             	console.log(sqlitepath);
-                                self.$broadcast('vuetable:show-loading')
+                                self.$broadcast('vuetable:show-loading');
                             },
                             complete: function(){
                                 self.$broadcast('vuetable:hide-loading');
